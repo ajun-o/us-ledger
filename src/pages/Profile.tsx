@@ -23,10 +23,10 @@ import {
   Zap,
   Phone,
   Share2,
-  Info,
-  X
+  Info
 } from 'lucide-react'
 import { useState } from 'react'
+import DynamicIsland from '../components/DynamicIsland'
 import './Profile.css'
 
 type TabType = 'home' | 'bills' | 'reports' | 'profile'
@@ -38,14 +38,6 @@ interface Props {
 }
 
 export default function Profile({ activeTab, onTabChange, onOpenSettings }: Props) {
-  const [showBanner, setShowBanner] = useState(true)
-
-  const tabs = [
-    { id: 'home' as TabType, icon: Wallet, label: '主页' },
-    { id: 'bills' as TabType, icon: FileText, label: '账单' },
-    { id: 'reports' as TabType, icon: BarChart3, label: '报表' },
-    { id: 'profile' as TabType, icon: Settings, label: '我的' }
-  ]
 
   const commonFeatures = [
     { icon: List, label: '收支分类', color: '#FF6B6B' },
@@ -209,35 +201,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
         </div>
       </main>
 
-      {/* 悬浮广告 */}
-      {showBanner && (
-        <div className="banner">
-          <div className="banner-content">
-            <span className="banner-tag">限定</span>
-            <span className="banner-text">会员送好礼</span>
-          </div>
-          <button className="banner-close" onClick={() => setShowBanner(false)}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* 底部导航 */}
-      <nav className="bottom-nav">
-        {tabs.map(tab => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => onTabChange(tab.id)}
-            >
-              <Icon size={22} />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
-      </nav>
+      <DynamicIsland activeTab={activeTab} onTabChange={onTabChange} />
     </div>
   )
 }

@@ -9,11 +9,12 @@ import {
   FileText,
   BarChart3,
   User,
-  X,
   Edit3,
   Trash2
 } from 'lucide-react'
 import BillDetail from './BillDetail'
+import MonthPicker from './MonthPicker'
+import DynamicIsland from '../components/DynamicIsland'
 import { type BillItem, fetchBills, updateBill, deleteBill, fetchMonthStats } from '../lib/bills'
 import './Home.css'
 
@@ -33,40 +34,53 @@ interface Props {
 const EYE_KEY = 'us_ledger_show_amount'
 
 export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoAssets, refreshKey, onDataChange }: Props) {
+  const now = new Date()
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear())
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1)
+  const [showMonthPicker, setShowMonthPicker] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('joint')
   const [showAmount, setShowAmount] = useState(() => {
     return localStorage.getItem(EYE_KEY) !== 'false'
   })
-  const [showBanner, setShowBanner] = useState(true)
   const [showViewSheet, setShowViewSheet] = useState(false)
   const [hasPartner] = useState(false)
   const [animatingAmount, setAnimatingAmount] = useState(false)
 
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const touchStartX = useRef(0)
+  const cardTouchStartX = useRef(0)
   const [detailBill, setDetailBill] = useState<BillItem | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<BillItem | null>(null)
+  const [deletedBill, setDeletedBill] = useState<BillItem | null>(null)
+  const undoRef = useRef<ReturnType<typeof setTimeout>>()
 
   const [monthStats, setMonthStats] = useState({ totalExpense: 0, totalIncome: 0 })
   const [recentBills, setRecentBills] = useState<BillItem[]>([])
 
-  // 从 Supabase 加载数据
+  // 加载数据
   useEffect(() => {
     let cancelled = false
 
     const load = async () => {
       try {
-        const today = new Date()
-        const y = today.getFullYear()
-        const m = String(today.getMonth() + 1).padStart(2, '0')
-        const d = String(today.getDate()).padStart(2, '0')
-        const threeDaysAgo = new Date(today)
-        threeDaysAgo.setDate(today.getDate() - 3)
-        const startDate = `${threeDaysAgo.getFullYear()}-${String(threeDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(threeDaysAgo.getDate()).padStart(2, '0')}`
+        const m = String(selectedMonth).padStart(2, '0')
+        // 选中的月份的最后一天
+        const lastDay = new Date(selectedYear, selectedMonth, 0).getDate()
+        const endDate = `${selectedYear}-${m}-${String(lastDay).padStart(2, '0')}`
+        // 近3日：如果是当前月则最近3天，否则取月末3天
+        const isCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth() + 1
+        let startDate: string
+        if (isCurrentMonth) {
+          const today = now.getDate()
+          const threeDaysAgo = new Date(now)
+          threeDaysAgo.setDate(today - 3)
+          startDate = `${threeDaysAgo.getFullYear()}-${String(threeDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(threeDaysAgo.getDate()).padStart(2, '0')}`
+        } else {
+          startDate = `${selectedYear}-${m}-${String(Math.max(1, lastDay - 3)).padStart(2, '0')}`
+        }
 
         const [stats, bills] = await Promise.all([
-          fetchMonthStats(),
-          fetchBills({ startDate, endDate: `${y}-${m}-${d}`, limit: 50 })
+          fetchMonthStats(selectedYear, selectedMonth),
+          fetchBills({ startDate, endDate, limit: 50 })
         ])
 
         if (!cancelled) {
@@ -80,7 +94,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
 
     load()
     return () => { cancelled = true }
-  }, [refreshKey])
+  }, [refreshKey, selectedYear, selectedMonth])
 
   // 按日期分组
   const groupedBills: Record<string, BillItem[]> = {}
@@ -89,10 +103,18 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     groupedBills[bill.date].push(bill)
   })
 
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const yesterdayDate = new Date(now)
+  yesterdayDate.setDate(now.getDate() - 1)
+  const yesterdayStr = `${yesterdayDate.getFullYear()}-${String(yesterdayDate.getMonth() + 1).padStart(2, '0')}-${String(yesterdayDate.getDate()).padStart(2, '0')}`
+  const twoDaysAgoDate = new Date(now)
+  twoDaysAgoDate.setDate(now.getDate() - 2)
+  const twoDaysAgoStr = `${twoDaysAgoDate.getFullYear()}-${String(twoDaysAgoDate.getMonth() + 1).padStart(2, '0')}-${String(twoDaysAgoDate.getDate()).padStart(2, '0')}`
+
   const dateLabels: Record<string, string> = {
-    '2026-04-28': '今天',
-    '2026-04-27': '昨天',
-    '2026-04-26': '前天'
+    [todayStr]: '今天',
+    [yesterdayStr]: '昨天',
+    [twoDaysAgoStr]: '前天'
   }
 
   const handleTouchStart = (e: React.TouchEvent, _id: string) => {
@@ -119,15 +141,35 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     }
   }
 
-  const handleDeleteBill = async (id: string) => {
+  const handleDeleteBill = async (bill: BillItem) => {
+    // 保存账单数据用于撤销
+    setDeletedBill(bill)
     try {
-      await deleteBill(id)
-      setRecentBills(prev => prev.filter(b => b.id !== id))
+      await deleteBill(bill.id)
+      setRecentBills(prev => prev.filter(b => b.id !== bill.id))
       onDataChange?.()
     } catch (e) {
       console.error('删除账单失败', e)
+      setDeletedBill(null)
+      return
     }
-    setDeleteTarget(null)
+    // 3秒后清除撤销状态
+    if (undoRef.current) clearTimeout(undoRef.current)
+    undoRef.current = setTimeout(() => setDeletedBill(null), 3000)
+    setSwipedId(null)
+  }
+
+  const handleUndoDelete = () => {
+    if (!deletedBill) return
+    if (undoRef.current) clearTimeout(undoRef.current)
+    // 直接恢复到 localStorage
+    const raw = localStorage.getItem('us_ledger_bills')
+    const bills: BillItem[] = raw ? JSON.parse(raw) : []
+    bills.push(deletedBill)
+    localStorage.setItem('us_ledger_bills', JSON.stringify(bills))
+    setRecentBills(prev => [deletedBill, ...prev])
+    onDataChange?.()
+    setDeletedBill(null)
   }
 
   const handleSwipeEdit = (bill: BillItem) => {
@@ -137,7 +179,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
 
   const handleSwipeDelete = (bill: BillItem) => {
     setSwipedId(null)
-    setDeleteTarget(bill)
+    handleDeleteBill(bill)
   }
 
   // 动态数据（按 viewMode 分配，当前简化为全部展示）
@@ -194,12 +236,29 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     setTimeout(() => setAnimatingAmount(false), 300)
   }
 
-  const tabs = [
-    { id: 'home' as TabType, icon: Wallet, label: '主页' },
-    { id: 'bills' as TabType, icon: FileText, label: '账单' },
-    { id: 'reports' as TabType, icon: BarChart3, label: '报表' },
-    { id: 'profile' as TabType, icon: User, label: '我的' }
-  ]
+  const handleCardTouchStart = (e: React.TouchEvent) => {
+    cardTouchStartX.current = e.touches[0].clientX
+  }
+
+  const handleCardTouchEnd = (e: React.TouchEvent) => {
+    const diff = cardTouchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) < 50) return
+    const currentIdx = viewModes.indexOf(viewMode)
+    if (diff > 0 && currentIdx < viewModes.length - 1) {
+      // 左滑 → 下一个
+      const next = viewModes[currentIdx + 1]
+      if (next === 'partner' && !hasPartner) return
+      setAnimatingAmount(true)
+      setViewMode(next)
+      setTimeout(() => setAnimatingAmount(false), 300)
+    } else if (diff < 0 && currentIdx > 0) {
+      // 右滑 → 上一个
+      const prev = viewModes[currentIdx - 1]
+      setAnimatingAmount(true)
+      setViewMode(prev)
+      setTimeout(() => setAnimatingAmount(false), 300)
+    }
+  }
 
   return (
     <div className={`home-page ${theme || ''}`}>
@@ -216,7 +275,11 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
 
       <main className="home-main">
         {/* 资产卡片 */}
-        <div className="asset-card">
+        <div
+          className="asset-card"
+          onTouchStart={handleCardTouchStart}
+          onTouchEnd={handleCardTouchEnd}
+        >
           {/* 视角导航 */}
           <div className="card-nav">
             <button
@@ -242,10 +305,10 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
           </div>
 
           {/* 月份 */}
-          <div className="month-selector">
-            <span>2026年4月</span>
-            <ChevronRight size={14} />
-          </div>
+          <button className="month-selector" onClick={() => setShowMonthPicker(true)}>
+            <span>{selectedYear}年{selectedMonth}月</span>
+            <ChevronRight size={14} style={{ transform: 'rotate(90deg)' }} />
+          </button>
 
           {/* 支出标题 */}
           <div className="expense-header">
@@ -376,35 +439,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
         </div>
       </main>
 
-      {/* 悬浮广告 */}
-      {showBanner && (
-        <div className="banner">
-          <div className="banner-content">
-            <span className="banner-tag">限定</span>
-            <span className="banner-text">会员送好礼</span>
-          </div>
-          <button className="banner-close" onClick={() => setShowBanner(false)}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* 底部导航 */}
-      <nav className="bottom-nav">
-        {tabs.map(tab => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => onTabChange(tab.id)}
-            >
-              <Icon size={22} />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
-      </nav>
+      <DynamicIsland activeTab={activeTab} onTabChange={onTabChange} />
 
       {/* 账单详情弹窗 */}
       {detailBill && (
@@ -412,22 +447,26 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
           bill={detailBill}
           onClose={() => setDetailBill(null)}
           onSave={handleSaveBill}
-          onDelete={(id) => { setDetailBill(null); handleDeleteBill(id) }}
+          onDelete={(bill) => { setDetailBill(null); handleDeleteBill(bill) }}
         />
       )}
 
-      {/* 删除确认 */}
-      {deleteTarget && (
-        <div className="delete-confirm-overlay" onClick={() => setDeleteTarget(null)}>
-          <div className="delete-confirm" onClick={e => e.stopPropagation()}>
-            <p className="confirm-title">确认删除</p>
-            <p className="confirm-desc">删除后无法恢复，确定要删除这笔账单吗？</p>
-            <div className="confirm-actions">
-              <button className="confirm-btn cancel" onClick={() => setDeleteTarget(null)}>取消</button>
-              <button className="confirm-btn confirm" onClick={() => handleDeleteBill(deleteTarget.id)}>确认删除</button>
-            </div>
-          </div>
+      {/* 删除撤销条 */}
+      {deletedBill && (
+        <div className="undo-bar">
+          <span className="undo-text">已删除 1 笔账单</span>
+          <button className="undo-btn" onClick={handleUndoDelete}>撤销</button>
         </div>
+      )}
+
+      {/* 月份选择器 */}
+      {showMonthPicker && (
+        <MonthPicker
+          year={selectedYear}
+          month={selectedMonth}
+          onConfirm={(y, m) => { setSelectedYear(y); setSelectedMonth(m); setShowMonthPicker(false) }}
+          onClose={() => setShowMonthPicker(false)}
+        />
       )}
 
       {/* 视角选择底部弹窗 */}

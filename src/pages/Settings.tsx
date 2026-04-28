@@ -25,9 +25,10 @@ import './Settings.css'
 
 interface Props {
   onBack: () => void
+  onLogout: () => void
 }
 
-export default function Settings({ onBack }: Props) {
+export default function Settings({ onBack, onLogout }: Props) {
   const sections = [
     {
       title: '伴侣管理',
@@ -140,7 +141,7 @@ export default function Settings({ onBack }: Props) {
 
       {/* 退出登录 */}
       <div className="logout-section">
-        <button className="logout-btn">退出登录</button>
+        <button className="logout-btn" onClick={onLogout}>退出登录</button>
       </div>
     </div>
   )

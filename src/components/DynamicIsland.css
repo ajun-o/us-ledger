@@ -1,0 +1,44 @@
+/* ========== Dynamic Island 底部导航 ========== */
+
+.dynamic-island {
+  position: fixed;
+  bottom: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 22px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.island-tab {
+  width: 44px;
+  height: 36px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.island-tab.active {
+  color: #2D3436;
+  background: #A8D5BA;
+  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+}
+
+.island-tab:active {
+  transform: scale(0.9);
+}

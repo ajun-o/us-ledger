@@ -63,7 +63,7 @@
   z-index: 1;
   flex: 1;
   padding: 0 16px;
-  padding-bottom: 100px;
+  padding-bottom: 80px;
 }
 
 /* 资产卡片 */
@@ -560,102 +560,6 @@
   border-radius: 0 12px 12px 0;
 }
 
-/* 悬浮广告 */
-.banner {
-  position: fixed;
-  bottom: 80px;
-  left: 16px;
-  right: 16px;
-  background: linear-gradient(135deg, #F4A261 0%, #E76F51 100%);
-  border-radius: 16px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 16px rgba(244, 162, 97, 0.4);
-  z-index: 50;
-  animation: slideUp 0.3s ease;
-}
-
-.banner-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.banner-tag {
-  background: #FFFFFF;
-  color: #E76F51;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 8px;
-}
-
-.banner-text {
-  color: #FFFFFF;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.banner-close {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.banner-close:active {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* 底部导航 */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #FFFFFF;
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 0;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.05);
-  z-index: 100;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  padding: 8px 16px;
-  color: #636E72;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.nav-item.active {
-  color: #A8D5BA;
-}
-
-.nav-item:active {
-  transform: scale(0.9);
-}
 
 /* 金额动画 */
 .amount-display.animating .amount {
@@ -836,70 +740,42 @@
   opacity: 0.3;
 }
 
-/* 删除确认弹窗 */
-.delete-confirm-overlay {
+/* 撤销条 */
+.undo-bar {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  bottom: 80px;
+  left: 16px;
+  right: 16px;
+  background: #2D3436;
+  color: #FFFFFF;
+  border-radius: 12px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   z-index: 400;
-  animation: fadeIn 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
 }
 
-.delete-confirm {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 24px;
-  width: 280px;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-}
-
-.confirm-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #2D3436;
-  margin: 0 0 8px 0;
-}
-
-.confirm-desc {
-  font-size: 13px;
-  color: #636E72;
-  margin: 0 0 20px 0;
-  line-height: 1.5;
-}
-
-.confirm-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.confirm-btn {
-  flex: 1;
-  padding: 10px 0;
-  border-radius: 12px;
-  border: none;
+.undo-text {
   font-size: 14px;
   font-weight: 500;
+}
+
+.undo-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #A8D5BA;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.confirm-btn.cancel {
-  background: #F5F5F5;
-  color: #636E72;
-}
-
-.confirm-btn.confirm {
-  background: #E74C3C;
-  color: #FFFFFF;
-}
-
-.confirm-btn:active {
-  transform: scale(0.95);
+.undo-btn:active {
+  background: rgba(168, 213, 186, 0.2);
+  border-color: #A8D5BA;
 }

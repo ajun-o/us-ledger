@@ -15,12 +15,13 @@
 
 .add-record-sheet {
   width: 100%;
-  max-height: 95vh;
+  height: 92vh;
   background: #FFFFFF;
   border-radius: 24px 24px 0 0;
   display: flex;
   flex-direction: column;
   animation: slideUp 0.3s ease;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -33,13 +34,43 @@
   to { transform: translateY(0); }
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.shake {
+  animation: shake 0.4s ease;
+}
+
+.amount-section.shake .amount-display {
+  color: #E74C3C;
+}
+
+.category-grid.shake {
+  border: 2px solid #E74C3C;
+  border-radius: 16px;
+  padding: 12px 18px 14px;
+}
+
 /* 顶部 */
 .sheet-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid #F0F0F0;
+  flex-shrink: 0;
+}
+
+/* 可滚动中间区域 */
+.record-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .close-btn {
@@ -92,18 +123,18 @@
   display: flex;
   align-items: baseline;
   justify-content: center;
-  padding: 24px 20px;
+  padding: 16px 20px 12px;
 }
 
 .currency {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   color: #2D3436;
   margin-right: 4px;
 }
 
 .amount-display {
-  font-size: 48px;
+  font-size: 40px;
   font-weight: 700;
   color: #2D3436;
   font-family: 'SF Mono', 'DIN Alternate', monospace;
@@ -117,13 +148,13 @@
   display: flex;
   justify-content: center;
   gap: 12px;
-  padding: 0 20px 16px;
+  padding: 0 20px 10px;
 }
 
 .member-btn {
   flex: 1;
   max-width: 100px;
-  padding: 10px 16px;
+  padding: 8px 16px;
   border-radius: 20px;
   border: 2px solid #E8E8E8;
   background: #FFFFFF;
@@ -149,16 +180,16 @@
   display: flex;
   justify-content: center;
   gap: 24px;
-  padding: 0 20px 16px;
+  padding: 0 20px 8px;
 }
 
 .type-tab {
   background: none;
   border: none;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #B2BEC3;
-  padding: 8px 16px;
+  padding: 6px 16px;
   border-radius: 16px;
   cursor: pointer;
   position: relative;
@@ -183,17 +214,17 @@
 .category-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 0 20px 16px;
+  gap: 8px;
+  padding: 0 20px 10px;
 }
 
 .category-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 12px 8px;
-  border-radius: 16px;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 14px;
   border: none;
   background: #F5F5F5;
   cursor: pointer;
@@ -213,18 +244,157 @@
 }
 
 .cat-icon {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .cat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #636E72;
   transition: color 0.2s ease;
 }
 
+/* 账户选择行 */
+.account-row {
+  padding: 0 20px 8px;
+}
+
+.account-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #F5F5F5;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #2D3436;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.account-select-btn:active {
+  background: #E8E8E8;
+}
+
+.account-select-icon {
+  font-size: 20px;
+}
+
+.account-select-name {
+  font-weight: 500;
+  flex: 1;
+  text-align: left;
+}
+
+.account-select-balance {
+  font-size: 12px;
+  color: #B2BEC3;
+}
+
+/* 账户选择弹窗 */
+.account-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 300;
+  animation: fadeIn 0.2s ease;
+}
+
+.account-sheet {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  animation: slideUp 0.3s ease;
+}
+
+.account-sheet h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #D0D0D0;
+  border-radius: 2px;
+  margin: 0 auto 12px;
+}
+
+.account-sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.account-sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 2px solid #F0F0F0;
+  border-radius: 14px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.account-sheet-item:active {
+  background: #F5F5F5;
+}
+
+.account-sheet-item.selected {
+  border-color: #A8D5BA;
+  background: rgba(168, 213, 186, 0.08);
+}
+
+.account-sheet-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-sheet-icon {
+  font-size: 28px;
+}
+
+.account-sheet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-sheet-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #2D3436;
+}
+
+.account-sheet-balance {
+  font-size: 12px;
+  color: #B2BEC3;
+}
+
+.account-sheet-check {
+  color: #A8D5BA;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 /* 更多选项 */
 .more-section {
-  padding: 0 20px 12px;
+  padding: 0 20px 8px;
 }
 
 .more-toggle {
@@ -233,11 +403,11 @@
   justify-content: center;
   gap: 4px;
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   background: #F5F5F5;
   border: none;
-  border-radius: 12px;
-  font-size: 13px;
+  border-radius: 10px;
+  font-size: 12px;
   color: #636E72;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -287,17 +457,47 @@
   color: #636E72;
 }
 
+/* 日期选择器 */
+.date-picker-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px 12px;
+}
+
+.date-input,
+.time-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #E8E8E8;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #2D3436;
+  outline: none;
+  background: #FFFFFF;
+  font-family: inherit;
+}
+
+.date-input:focus,
+.time-input:focus {
+  border-color: #A8D5BA;
+}
+
 /* 备注输入 */
+.note-input-wrapper {
+  position: relative;
+  padding: 0 20px 8px;
+}
+
 .note-input {
-  padding: 0 20px 12px;
+  width: 100%;
 }
 
 .note-input input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 1px solid #E8E8E8;
-  border-radius: 12px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 13px;
   color: #2D3436;
   outline: none;
   transition: border-color 0.2s ease;
@@ -307,18 +507,66 @@
   border-color: #A8D5BA;
 }
 
+/* @提及下拉 */
+.mention-dropdown {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 100%;
+  margin-bottom: 4px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.mention-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.mention-item:active {
+  background: #F5F5F5;
+}
+
+.mention-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #C8B6E2;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mention-name {
+  font-size: 14px;
+  color: #2D3436;
+  font-weight: 500;
+}
+
 .note-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 10px;
-  margin: 0 20px 12px;
   width: calc(100% - 40px);
+  padding: 8px;
+  margin: 0 20px 8px;
   background: #F5F5F5;
   border: none;
-  border-radius: 12px;
-  font-size: 13px;
+  border-radius: 10px;
+  font-size: 12px;
   color: #636E72;
   cursor: pointer;
 }
@@ -329,7 +577,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 20px 12px;
+  padding: 4px 20px 8px;
   font-size: 12px;
   color: #B2BEC3;
 }
@@ -339,6 +587,7 @@
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   background: #F5F5F5;
+  flex-shrink: 0;
 }
 
 .keyboard-row {
@@ -394,4 +643,20 @@
 
 .key.confirm:active {
   background: #8BC4A4;
+}
+
+.key.confirm:disabled {
+  background: #CCC;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 0.8s linear infinite;
 }

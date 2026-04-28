@@ -16,6 +16,7 @@ export default function PhoneLogin({ onBack, onSuccess, goToRegister }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [countdown, setCountdown] = useState(0)
+  const [devMode, setDevMode] = useState(false)
 
   useEffect(() => {
     if (countdown > 0) {
@@ -43,7 +44,16 @@ export default function PhoneLogin({ onBack, onSuccess, goToRegister }: Props) {
     setLoading(false)
 
     if (sendError) {
+      // SMS 服务未配置时自动进入开发模式
+      if (sendError.message?.includes('Unsupported phone provider')) {
+        setDevMode(true)
+        setCountdown(60)
+        setStep(2)
+        setLoading(false)
+        return
+      }
       setError(sendError.message || '发送验证码失败，请重试')
+      setLoading(false)
       return
     }
 
@@ -54,6 +64,12 @@ export default function PhoneLogin({ onBack, onSuccess, goToRegister }: Props) {
   const handleVerifyCode = async () => {
     if (code.length !== 6) {
       setError('请输入6位验证码')
+      return
+    }
+
+    // 开发模式：任意6位验证码直接通过
+    if (devMode) {
+      onSuccess()
       return
     }
 
@@ -127,7 +143,11 @@ export default function PhoneLogin({ onBack, onSuccess, goToRegister }: Props) {
           {step === 2 && (
             <>
               <div className="sent-info">
-                <p>验证码已发送至</p>
+                {devMode ? (
+                  <p className="dev-hint">开发模式：无需真实验证码</p>
+                ) : (
+                  <p>验证码已发送至</p>
+                )}
                 <p className="sent-phone">+86 {phone}</p>
               </div>
 

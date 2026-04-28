@@ -8,6 +8,7 @@ import {
   Wallet
 } from 'lucide-react'
 import { type BillItem } from '../lib/bills'
+import { fetchAccounts } from '../lib/accounts'
 import './BillDetail.css'
 
 type MemberType = 'mine' | 'partner' | 'joint'
@@ -16,7 +17,7 @@ interface Props {
   bill: BillItem
   onClose: () => void
   onSave: (bill: BillItem) => void
-  onDelete: (id: string) => void
+  onDelete: (bill: BillItem) => void
 }
 
 const expenseCategories = [
@@ -38,7 +39,7 @@ const incomeCategories = [
   { id: 'other', icon: '📌', label: '其他' }
 ]
 
-const accounts = ['微信', '支付宝', '银行卡', '现金']
+const accounts = fetchAccounts().map(a => a.name)
 
 const memberLabels: Record<MemberType, string> = {
   mine: '我',
@@ -63,7 +64,7 @@ export default function BillDetail({ bill, onClose, onSave, onDelete }: Props) {
   }
 
   const handleDelete = () => {
-    onDelete(bill.id)
+    onDelete(bill)
     setShowDeleteConfirm(false)
     onClose()
   }

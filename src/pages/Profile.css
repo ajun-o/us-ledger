@@ -40,7 +40,7 @@
 .profile-main {
   flex: 1;
   padding: 16px;
-  padding-bottom: 100px;
+  padding-bottom: 80px;
   overflow-y: auto;
 }
 
@@ -314,99 +314,3 @@
   color: #2D3436;
 }
 
-/* 悬浮广告 */
-.banner {
-  position: fixed;
-  bottom: 80px;
-  left: 16px;
-  right: 16px;
-  background: linear-gradient(135deg, #F4A261 0%, #E76F51 100%);
-  border-radius: 16px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 16px rgba(244, 162, 97, 0.4);
-  z-index: 50;
-  animation: slideUp 0.3s ease;
-}
-
-.banner-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.banner-tag {
-  background: #FFFFFF;
-  color: #E76F51;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 8px;
-}
-
-.banner-text {
-  color: #FFFFFF;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.banner-close {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.banner-close:active {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* 底部导航 */
-.profile-page .bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #FFFFFF;
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 0;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.05);
-  z-index: 100;
-}
-
-.profile-page .nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  padding: 8px 16px;
-  color: #636E72;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.profile-page .nav-item.active {
-  color: #A8D5BA;
-}
-
-.profile-page .nav-item:active {
-  transform: scale(0.9);
-}
