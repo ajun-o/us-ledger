@@ -95,7 +95,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     '2026-04-26': '前天'
   }
 
-  const handleTouchStart = (e: React.TouchEvent, id: string) => {
+  const handleTouchStart = (e: React.TouchEvent, _id: string) => {
     touchStartX.current = e.touches[0].clientX
     setSwipedId(null)
   }

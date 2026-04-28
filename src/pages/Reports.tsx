@@ -6,7 +6,6 @@ import {
   Clock,
   Plus,
   Calendar as CalendarIcon,
-  TrendingUp,
   Wallet,
   BarChart3,
   User

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, Plus, Wallet, Smartphone, CreditCard, Building2, PiggyBank } from 'lucide-react'
+import { ChevronLeft, Plus, Wallet, Smartphone, Building2, PiggyBank } from 'lucide-react'
 import './Assets.css'
 
 interface Props {

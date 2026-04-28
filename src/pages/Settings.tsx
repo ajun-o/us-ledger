@@ -109,7 +109,7 @@ export default function Settings({ onBack }: Props) {
               {section.items.map((item, itemIndex) => {
                 const Icon = item.icon
                 return (
-                  <div key={itemIndex} className={`settings-item ${item.danger ? 'danger' : ''}`}>
+                  <div key={itemIndex} className={`settings-item ${(item as Record<string, unknown>).danger ? 'danger' : ''}`}>
                     <div className="item-left">
                       <div className="item-icon" style={{ background: item.color + '15' }}>
                         <Icon size={18} color={item.color} />
@@ -122,8 +122,8 @@ export default function Settings({ onBack }: Props) {
                       </div>
                     </div>
                     <div className="item-right">
-                      {item.toggle !== undefined ? (
-                        <div className={`toggle ${item.toggle ? 'active' : ''}`}>
+                      {(item as Record<string, unknown>).toggle !== undefined ? (
+                        <div className={`toggle ${(item as Record<string, unknown>).toggle ? 'active' : ''}`}>
                           <div className="toggle-knob"></div>
                         </div>
                       ) : (

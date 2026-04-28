@@ -10,6 +10,8 @@ import {
 import { type BillItem } from '../lib/bills'
 import './BillDetail.css'
 
+type MemberType = 'mine' | 'partner' | 'joint'
+
 interface Props {
   bill: BillItem
   onClose: () => void

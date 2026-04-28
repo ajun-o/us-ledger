@@ -124,7 +124,7 @@ export default function PhoneRegister({ onBack, onSuccess, goToLogin }: Props) {
       <header className="auth-header">
         <button
           className="back-btn"
-          onClick={step === 1 ? onBack : () => setStep(step - 1)}
+          onClick={step === 1 ? onBack : () => setStep((step - 1) as 1 | 2 | 3)}
         >
           <ChevronLeft size={20} />
         </button>
