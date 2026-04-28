@@ -1,0 +1,192 @@
+/* ========== Settings Page ========== */
+
+.settings-page {
+  min-height: 100vh;
+  background: #F5F5F5;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部 */
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  background: #FFFFFF;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #F5F5F5;
+  color: #2D3436;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:active {
+  transform: scale(0.9);
+  background: #E8E8E8;
+}
+
+.settings-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3436;
+  margin: 0;
+}
+
+/* 主内容 */
+.settings-main {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* 设置分组 */
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #636E72;
+  margin: 0 0 8px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-list {
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 设置项 */
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #F5F5F5;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-item:active {
+  background: #F9F9F9;
+}
+
+.settings-item.danger .item-label {
+  color: #E74C3C;
+}
+
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.item-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #2D3436;
+}
+
+.item-description {
+  font-size: 12px;
+  color: #636E72;
+}
+
+.item-right {
+  display: flex;
+  align-items: center;
+}
+
+.arrow {
+  color: #B2BEC3;
+}
+
+/* 开关 */
+.toggle {
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  background: #E0E0E0;
+  padding: 2px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.toggle.active {
+  background: #A8D5BA;
+}
+
+.toggle-knob {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.toggle.active .toggle-knob {
+  transform: translateX(20px);
+}
+
+/* 退出登录 */
+.logout-section {
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.logout-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 26px;
+  border: none;
+  background: #FFFFFF;
+  color: #E74C3C;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.logout-btn:active {
+  transform: scale(0.98);
+  background: #FFF5F5;
+}

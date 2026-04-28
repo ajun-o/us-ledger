@@ -1,0 +1,397 @@
+/* ========== Add Record Sheet ========== */
+
+.add-record-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+
+.add-record-sheet {
+  width: 100%;
+  max-height: 95vh;
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* 顶部 */
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #F5F5F5;
+  color: #636E72;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.close-btn:active {
+  transform: scale(0.9);
+  background: #E8E8E8;
+}
+
+.sheet-header h2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #2D3436;
+  margin: 0;
+}
+
+.save-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #A8D5BA;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.save-btn:active {
+  background: rgba(168, 213, 186, 0.1);
+}
+
+/* 金额输入 */
+.amount-section {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding: 24px 20px;
+}
+
+.currency {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2D3436;
+  margin-right: 4px;
+}
+
+.amount-display {
+  font-size: 48px;
+  font-weight: 700;
+  color: #2D3436;
+  font-family: 'SF Mono', 'DIN Alternate', monospace;
+  letter-spacing: -2px;
+  min-width: 100px;
+  text-align: center;
+}
+
+/* 成员选择 */
+.member-selector {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 20px 16px;
+}
+
+.member-btn {
+  flex: 1;
+  max-width: 100px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 2px solid #E8E8E8;
+  background: #FFFFFF;
+  font-size: 14px;
+  font-weight: 500;
+  color: #636E72;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.member-btn.active {
+  background: #A8D5BA;
+  border-color: #A8D5BA;
+  color: #2D3436;
+}
+
+.member-btn:active {
+  transform: scale(0.95);
+}
+
+/* 收支切换 */
+.type-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 20px 16px;
+}
+
+.type-tab {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #B2BEC3;
+  padding: 8px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.type-tab.active {
+  font-weight: 600;
+}
+
+.type-tab.active.expense {
+  color: #E74C3C;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.type-tab.active.income {
+  color: #27AE60;
+  background: rgba(39, 174, 96, 0.1);
+}
+
+/* 分类网格 */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0 20px 16px;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  border: none;
+  background: #F5F5F5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-item.selected {
+  background: #A8D5BA;
+}
+
+.category-item.selected .cat-label {
+  color: #FFFFFF;
+}
+
+.category-item:active {
+  transform: scale(0.95);
+}
+
+.cat-icon {
+  font-size: 24px;
+}
+
+.cat-label {
+  font-size: 12px;
+  color: #636E72;
+  transition: color 0.2s ease;
+}
+
+/* 更多选项 */
+.more-section {
+  padding: 0 20px 12px;
+}
+
+.more-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: 10px;
+  background: #F5F5F5;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #636E72;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.more-toggle:active {
+  background: #E8E8E8;
+}
+
+.more-toggle .rotated {
+  transform: rotate(180deg);
+}
+
+.more-options {
+  margin-top: 12px;
+  background: #F9F9F9;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #F0F0F0;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.option-item:last-child {
+  border-bottom: none;
+}
+
+.option-item:active {
+  background: #F0F0F0;
+}
+
+.option-item span:first-of-type {
+  flex: 1;
+  font-size: 14px;
+  color: #2D3436;
+}
+
+.option-value {
+  font-size: 14px;
+  color: #636E72;
+}
+
+/* 备注输入 */
+.note-input {
+  padding: 0 20px 12px;
+}
+
+.note-input input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #2D3436;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.note-input input:focus {
+  border-color: #A8D5BA;
+}
+
+.note-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  margin: 0 20px 12px;
+  width: calc(100% - 40px);
+  background: #F5F5F5;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #636E72;
+  cursor: pointer;
+}
+
+/* 最近记录 */
+.recent-record {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 20px 12px;
+  font-size: 12px;
+  color: #B2BEC3;
+}
+
+/* 数字键盘 */
+.keyboard {
+  padding: 8px 12px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  background: #F5F5F5;
+}
+
+.keyboard-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.keyboard-row:last-child {
+  margin-bottom: 0;
+}
+
+.key {
+  flex: 1;
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: #FFFFFF;
+  font-size: 20px;
+  font-weight: 500;
+  color: #2D3436;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.1s ease;
+}
+
+.key:active {
+  transform: scale(0.95);
+  background: #F0F0F0;
+}
+
+.key.delete {
+  background: #FFE4E4;
+  color: #E74C3C;
+  font-size: 14px;
+}
+
+.key.plus {
+  background: #E8F5E9;
+  color: #27AE60;
+  font-size: 24px;
+}
+
+.key.zero {
+  font-size: 16px;
+}
+
+.key.confirm {
+  background: #A8D5BA;
+  color: #2D3436;
+  font-weight: 600;
+}
+
+.key.confirm:active {
+  background: #8BC4A4;
+}

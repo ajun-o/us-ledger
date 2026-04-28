@@ -1,0 +1,386 @@
+/* ========== Welcome Page ========== */
+
+/* 主题变量 */
+.welcome {
+  --bg: #FFFFFF;
+  --text-primary: #2D3436;
+  --text-secondary: #636E72;
+  --mint: #A8D5BA;
+  --mint-dark: #8BC4A4;
+  --orange: #F4A261;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.welcome.dark {
+  --bg: #1A1A2E;
+  --text-primary: #EAEAEA;
+  --text-secondary: #A0A0A0;
+  --mint: #6DB88D;
+  --mint-dark: #5AA37A;
+  --orange: #E8924D;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* 页面容器 */
+.welcome {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s ease;
+}
+
+/* 顶部导航 */
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  padding-top: env(safe-area-inset-top, 16px);
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dark .icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* 主内容区 */
+.welcome-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px;
+}
+
+/* 标题 */
+.welcome-title {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.welcome-title h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.welcome-title p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* 插画区 */
+.welcome-illustration {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 320px;
+  margin-bottom: 40px;
+}
+
+.illustration-wrapper {
+  position: relative;
+  width: 280px;
+  height: 240px;
+}
+
+/* 双人场景 */
+.couple-scene {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: 100%;
+}
+
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.person-head {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--mint), var(--orange));
+  margin-bottom: 8px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.person-right .person-head {
+  background: linear-gradient(135deg, var(--orange), var(--mint));
+  animation-delay: 0.5s;
+}
+
+.person-body {
+  width: 40px;
+  height: 56px;
+  border-radius: 20px 20px 12px 12px;
+  background: var(--mint);
+}
+
+.person-right .person-body {
+  background: var(--orange);
+}
+
+/* 账本图标 */
+.ledger-icon {
+  position: relative;
+  width: 64px;
+  height: 80px;
+}
+
+.ledger-book {
+  width: 64px;
+  height: 80px;
+  border-radius: 8px 16px 16px 8px;
+  background: linear-gradient(135deg, #C8B6E2, #A8D5BA);
+  box-shadow: var(--card-shadow);
+}
+
+.ledger-lines {
+  position: absolute;
+  top: 24px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ledger-lines span {
+  display: block;
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* 浮动金币 */
+.floating-coins {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.coin {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD93D, #F4A261);
+  box-shadow: 0 2px 8px rgba(244, 162, 97, 0.4);
+  animation: float 2.5s ease-in-out infinite;
+}
+
+.coin-1 { top: 10%; left: 15%; animation-delay: 0s; }
+.coin-2 { top: 60%; right: 10%; animation-delay: 0.8s; }
+.coin-3 { bottom: 20%; left: 10%; animation-delay: 1.6s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* 登录按钮区 */
+.login-section {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 32px;
+}
+
+.btn-wechat {
+  width: 100%;
+  height: 56px;
+  border-radius: 28px;
+  border: none;
+  background: var(--mint);
+  color: #2D3436;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+}
+
+.btn-wechat:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.btn-wechat:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 分割线 */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .divider::before,
+.dark .divider::after {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.divider span {
+  padding: 0 16px;
+}
+
+/* 其他登录方式 */
+.other-logins {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+}
+
+.login-icon-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.login-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.apple-btn {
+  background: #2D3436;
+  color: #FFFFFF;
+}
+
+.dark .apple-btn {
+  background: #FFFFFF;
+  color: #2D3436;
+}
+
+.phone-btn {
+  background: var(--mint);
+  color: #2D3436;
+}
+
+/* 注册链接 */
+.register-link {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  background: none;
+  border: 2px solid var(--mint);
+  border-radius: 26px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #2D3436;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.register-link:active:not(:disabled) {
+  transform: scale(0.95);
+  background: var(--mint);
+}
+
+.register-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 底部隐私政策 */
+.welcome-footer {
+  padding: 16px 24px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.privacy-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.privacy-check input {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--text-secondary);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.privacy-check input:checked + .checkmark {
+  background: var(--mint);
+  border-color: var(--mint);
+}
+
+.privacy-check input:checked + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid #2D3436;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.privacy-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.privacy-text a {
+  color: var(--mint-dark);
+  text-decoration: none;
+}

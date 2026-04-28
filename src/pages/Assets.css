@@ -1,0 +1,120 @@
+.assets-page {
+  min-height: 100vh;
+  background: #F8F9FA;
+}
+
+.assets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  background: #FFFFFF;
+}
+
+.assets-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3436;
+  margin: 0;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #F5F5F5;
+  color: #2D3436;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #A8D5BA;
+  color: #2D3436;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.assets-main {
+  padding: 20px 16px;
+}
+
+.total-card {
+  background: linear-gradient(135deg, #A8D5BA 0%, #8BC4A4 100%);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.total-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.total-amount {
+  font-size: 36px;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: 'SF Mono', 'DIN Alternate', monospace;
+  cursor: pointer;
+}
+
+.accounts-list {
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.account-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #F5F5F5;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.account-item:last-child { border-bottom: none; }
+.account-item:active { background: #F9F9F9; }
+
+.account-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #2D3436;
+}
+
+.account-balance {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3436;
+  font-family: 'SF Mono', 'DIN Alternate', monospace;
+}

@@ -1,0 +1,272 @@
+/* ========== Auth Pages ========== */
+
+.auth-page {
+  min-height: 100vh;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部 */
+.auth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #F5F5F5;
+  color: #2D3436;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:active {
+  transform: scale(0.9);
+  background: #E8E8E8;
+}
+
+.auth-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3436;
+  margin: 0;
+}
+
+/* 主内容 */
+.auth-main {
+  flex: 1;
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+
+/* 步骤指示器 */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #E8E8E8;
+  color: #636E72;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  background: #A8D5BA;
+  color: #2D3436;
+}
+
+.step-line {
+  width: 48px;
+  height: 2px;
+  background: #E8E8E8;
+  margin: 0 8px;
+  transition: background 0.3s ease;
+}
+
+.step-line.active {
+  background: #A8D5BA;
+}
+
+/* 表单 */
+.auth-form {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2D3436;
+  margin-bottom: 8px;
+}
+
+.optional {
+  font-weight: 400;
+  color: #636E72;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #F5F5F5;
+  border-radius: 12px;
+  padding: 0 16px;
+  transition: all 0.2s ease;
+}
+
+.input-wrapper:focus-within {
+  background: #FFFFFF;
+  box-shadow: 0 0 0 2px #A8D5BA;
+}
+
+.prefix {
+  font-size: 15px;
+  color: #2D3436;
+  padding-right: 12px;
+  border-right: 1px solid #E0E0E0;
+  margin-right: 12px;
+}
+
+.input-wrapper input {
+  flex: 1;
+  height: 48px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: #2D3436;
+  outline: none;
+}
+
+.input-wrapper input::placeholder {
+  color: #B2BEC3;
+}
+
+.code-input {
+  padding-right: 8px;
+}
+
+.send-code-btn {
+  padding: 8px 16px;
+  background: #A8D5BA;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2D3436;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.send-code-btn:disabled {
+  background: #E8E8E8;
+  color: #B2BEC3;
+  cursor: not-allowed;
+}
+
+.send-code-btn:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+.toggle-password {
+  background: none;
+  border: none;
+  color: #636E72;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: -8px;
+}
+
+.input-hint {
+  display: block;
+  font-size: 12px;
+  color: #636E72;
+  margin-top: 6px;
+}
+
+.error-msg {
+  background: #FFF5F5;
+  color: #E74C3C;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.auth-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 26px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.auth-btn.primary {
+  background: #A8D5BA;
+  color: #2D3436;
+  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+}
+
+.auth-btn.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-btn.primary:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+.auth-links {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #636E72;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #A8D5BA;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.link-btn.block {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* 已发送信息 */
+.sent-info {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.sent-info p {
+  font-size: 14px;
+  color: #636E72;
+  margin: 0 0 4px 0;
+}
+
+.sent-phone {
+  font-size: 20px !important;
+  font-weight: 600;
+  color: #2D3436 !important;
+}

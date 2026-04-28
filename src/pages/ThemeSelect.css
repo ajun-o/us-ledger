@@ -1,0 +1,393 @@
+/* ========== Theme Select Page ========== */
+
+.theme-select {
+  min-height: 100vh;
+  background: #F5F5F0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px;
+  padding-top: env(safe-area-inset-top, 16px);
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* 顶部 */
+.theme-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.skip-btn {
+  background: none;
+  border: none;
+  color: #636E72;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.skip-btn:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* 标题 */
+.theme-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.theme-title h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2D3436;
+  margin: 0 0 8px 0;
+}
+
+.theme-title p {
+  font-size: 15px;
+  color: #636E72;
+  margin: 0;
+}
+
+/* 主题卡片容器 */
+.theme-cards {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex: 1;
+  align-items: center;
+  max-height: 400px;
+}
+
+/* 卡片 */
+.theme-card {
+  flex: 1;
+  max-width: 160px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.theme-card.selected {
+  border-color: #A8D5BA;
+  transform: scale(1.02);
+  box-shadow: 0 4px 24px rgba(168, 213, 186, 0.4);
+}
+
+.theme-card:active {
+  transform: scale(0.98);
+}
+
+.theme-card.selected:active {
+  transform: scale(1.0);
+}
+
+.theme-card.locked {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.theme-card.locked:active {
+  transform: scale(1.0);
+}
+
+/* 卡片预览区 */
+.card-preview {
+  height: 180px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 锁定遮罩 */
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #FFFFFF;
+  z-index: 2;
+  border-radius: 20px 20px 0 0;
+}
+
+.lock-overlay span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 简约纯色预览 */
+.minimal-preview {
+  background: linear-gradient(135deg, #A8D5BA 0%, #8BC4A4 100%);
+}
+
+.preview-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.preview-tab {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.preview-tab.active {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+.preview-amount {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.preview-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.preview-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: 'SF Mono', 'DIN Alternate', monospace;
+}
+
+/* 迷你图表 */
+.preview-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 40px;
+  margin-top: auto;
+}
+
+.chart-bar {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 3px 3px 0 0;
+}
+
+/* 情侣模式预览 */
+.couple-preview {
+  background: linear-gradient(135deg, #FFF5E6 0%, #FFE4D6 100%);
+}
+
+.couple-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mini-avatars {
+  display: flex;
+}
+
+.mini-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+}
+
+.mini-avatar:not(:first-child) {
+  margin-left: -8px;
+}
+
+.avata-a {
+  background: linear-gradient(135deg, #A8D5BA, #8BC4A4);
+}
+
+.avata-b {
+  background: linear-gradient(135deg, #F4A261, #E8924D);
+}
+
+.couple-label {
+  font-size: 10px;
+  color: #636E72;
+}
+
+.couple-amount .preview-num {
+  color: #2D3436;
+}
+
+.couple-amount .preview-label {
+  color: #636E72;
+}
+
+/* 预算进度条 */
+.budget-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.budget-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #A8D5BA, #F4A261);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.budget-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #636E72;
+  margin-top: 6px;
+}
+
+/* 卡片信息 */
+.card-info {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.theme-card.selected .card-check,
+.card-check.checked {
+  background: #A8D5BA;
+  border-color: #A8D5BA;
+}
+
+.card-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2D3436;
+}
+
+/* 底部按钮 */
+.theme-footer {
+  padding: 24px 0;
+}
+
+.confirm-btn {
+  width: 100%;
+  height: 56px;
+  border-radius: 28px;
+  border: none;
+  background: #A8D5BA;
+  color: #2D3436;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+}
+
+.confirm-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 弹窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px 24px 0 0;
+  padding: 32px 24px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  animation: slideUp 0.3s ease;
+}
+
+.modal-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.modal-content h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2D3436;
+  margin: 0 0 8px 0;
+}
+
+.modal-content p {
+  font-size: 14px;
+  color: #636E72;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.modal-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 26px;
+  border: none;
+  background: #A8D5BA;
+  color: #2D3436;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-btn:active {
+  transform: scale(0.95);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

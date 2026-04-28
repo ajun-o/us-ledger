@@ -1,0 +1,33 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  --mint: #A8D5BA;
+  --orange: #F4A261;
+  --purple: #C8B6E2;
+  --bg-light: #F8F9FA;
+  --text-dark: #2D3436;
+  --text-mid: #636E72;
+  --text-light: #B2BEC3;
+  --success: #27AE60;
+  --danger: #E74C3C;
+}
+
+.placeholder-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8F9FA;
+  color: #636E72;
+  font-size: 16px;
+}
