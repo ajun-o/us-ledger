@@ -6,9 +6,6 @@ import {
   ChevronRight,
   Plus,
   Wallet,
-  FileText,
-  BarChart3,
-  User,
   Edit3,
   Trash2
 } from 'lucide-react'
@@ -51,7 +48,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   const cardTouchStartX = useRef(0)
   const [detailBill, setDetailBill] = useState<BillItem | null>(null)
   const [deletedBill, setDeletedBill] = useState<BillItem | null>(null)
-  const undoRef = useRef<ReturnType<typeof setTimeout>>()
+  const undoRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const [monthStats, setMonthStats] = useState({ totalExpense: 0, totalIncome: 0 })
   const [recentBills, setRecentBills] = useState<BillItem[]>([])

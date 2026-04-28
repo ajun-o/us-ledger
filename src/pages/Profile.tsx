@@ -25,7 +25,6 @@ import {
   Share2,
   Info
 } from 'lucide-react'
-import { useState } from 'react'
 import DynamicIsland from '../components/DynamicIsland'
 import './Profile.css'
 

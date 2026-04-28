@@ -225,7 +225,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
   const PIE_COLORS = ['#A8D5BA', '#F4A261', '#C8B6E2', '#E74C3C', '#27AE60', '#74B9FF', '#FFEAA7', '#636E72']
 
   // 图表下钻
-  const handlePieClick = (data: { name: string }) => {
+  const handlePieClick = (data: { name?: string }) => {
     if (!data?.name) return
     const items = bills.filter(b => b.type === 'expense' && b.categoryName === data.name)
     setDrillDown(items)
@@ -377,7 +377,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
                         <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(v: number) => `¥${v.toFixed(2)}`} />
+                    <Tooltip formatter={(v) => `¥${Number(v).toFixed(2)}`} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -388,7 +388,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
                     <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
                     <XAxis dataKey="day" fontSize={11} stroke="#B2BEC3" />
                     <YAxis fontSize={11} stroke="#B2BEC3" />
-                    <Tooltip formatter={(v: number) => `¥${v.toFixed(2)}`} />
+                    <Tooltip formatter={(v) => `¥${Number(v).toFixed(2)}`} />
                     <Area type="monotone" dataKey="expense" stroke="#E74C3C" fill="rgba(231,76,60,0.1)" name="支出" />
                     <Area type="monotone" dataKey="income" stroke="#27AE60" fill="rgba(39,174,96,0.1)" name="收入" />
                     <Legend />
@@ -398,11 +398,11 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
 
               {chartType === 'bar' && (
                 <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={barData} onClick={(data) => data?.activePayload?.[0] && handleBarClick(data.activePayload[0].payload)}>
+                  <BarChart data={barData} onClick={(data: any) => data?.activePayload?.[0] && handleBarClick(data.activePayload[0].payload)}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
                     <XAxis dataKey="name" fontSize={12} stroke="#2D3436" />
                     <YAxis fontSize={11} stroke="#B2BEC3" />
-                    <Tooltip formatter={(v: number) => `¥${v.toFixed(2)}`} />
+                    <Tooltip formatter={(v) => `¥${Number(v).toFixed(2)}`} />
                     <Legend />
                     <Bar dataKey="expense" fill="#E74C3C" name="支出" cursor="pointer" />
                     <Bar dataKey="income" fill="#27AE60" name="收入" cursor="pointer" />

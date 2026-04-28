@@ -118,8 +118,6 @@ export default function Assets({ onBack }: Props) {
 
   const handleDeleteAccount = () => {
     if (!deleteTarget) return
-    const billCounts = getBillAccountNames(bills)
-    const count = billCounts.get(deleteTarget.name) || 0
     deleteAccount(deleteTarget.id)
     setDeleteTarget(null)
     if (detailAccount?.id === deleteTarget.id) setDetailAccount(null)
@@ -141,7 +139,7 @@ export default function Assets({ onBack }: Props) {
     refreshData()
   }
 
-  const handleTouchStart = (e: React.TouchEvent, id: string) => {
+  const handleTouchStart = (e: React.TouchEvent, _id: string) => {
     touchStartX.current = e.touches[0].clientX
     setSwipedId(null)
   }

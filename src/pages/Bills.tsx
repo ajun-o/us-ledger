@@ -46,7 +46,6 @@ const expenseCats = ['餐饮', '交通', '购物', '娱乐', '居住', '医疗',
 const incomeCats = ['工资', '兼职', '理财', '红包', '其他']
 
 export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange }: Props) {
-  const [currentMonth] = useState('2026年4月')
   const [showSortMenu, setShowSortMenu] = useState(false)
   const [sortType, setSortType] = useState<SortType>('time-desc')
   const [showFilter, setShowFilter] = useState(false)
@@ -57,7 +56,7 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const touchStartX = useRef(0)
-  const longPressTimer = useRef<ReturnType<typeof setTimeout>>()
+  const longPressTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   // 筛选状态
   const [memberFilter, setMemberFilter] = useState<MemberFilter>('all')
@@ -79,12 +78,11 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
   const [bills, setBills] = useState<BillItem[]>([])
   const [loading, setLoading] = useState(true)
   const [detailBill, setDetailBill] = useState<BillItem | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<BillItem | null>(null)
   const [deletedBill, setDeletedBill] = useState<BillItem | null>(null)
-  const undoRef = useRef<ReturnType<typeof setTimeout>>()
+  const undoRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   // 搜索防抖 300ms
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const handleSearchChange = useCallback((val: string) => {
     setSearchText(val)
     if (debounceRef.current) clearTimeout(debounceRef.current)
