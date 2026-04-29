@@ -1,78 +1,95 @@
 # Us Ledger — 双人记账 PWA
 
-情侣/伴侣共同管理财务的记账应用。支持三视角切换（我/TA/共同）、AA 计算、预算管理、存钱计划、购物清单等功能。
+情侣/伴侣共同管理财务的记账应用。双账号真实认证，账单 Supabase 云端同步 + localStorage 离线降级，支持三视角切换（我/TA/共同）。
 
 ## 技术栈
 
-React 19 + TypeScript + Vite + Supabase + recharts
+React 19 + TypeScript + Vite 8 + Supabase Auth/DB + recharts + Lucide Icons
+
+## 认证体系
+
+- **Supabase Auth** — 手机号+密码注册/登录（phone → `p{phone}@us.internal` 邮箱映射，免 OTP）
+- **Session 管理** — 启动时自动校验，过期自动续期，5分钟缓冲
+- **情侣绑定** — 6位邀请码 + 7天有效期，服务端生成/核验，双向绑定/解绑
+- **RLS 策略** — bills 表按 user_id + couples 关系控制可见性
+
+## 数据架构
+
+- **Supabase 主存储** — 账单通过 RLS 策略实现跨设备同步
+- **localStorage 降级** — Supabase 不可用时自动切换，网络恢复后合并同步
+- **离线队列** — 断网时记账入队，恢复联网自动同步（`syncQueue`）
+- **双写合并** — `fetchBills` 同时读取 Supabase + localStorage，以 ID 去重合并
 
 ## 功能
 
-### 登录鉴权
-- Splash 启动页（品牌展示 + Token 校验 + 自动登录）
-- 微信/Apple ID/手机号登录
-- Token 管理（accessToken 2h / refreshToken 30d，5分钟缓冲自动刷新）
-- 多设备登录保护（旧设备 refreshToken 失效）
-- 注册邀请码绑定伴侣
-
-### 记账核心
-- 金额校验 + 分类必选 + 红色抖动提示
-- 离线保存队列（断网入队，恢复自动同步）
-- 账户选择器（底部弹出含余额）
-- 日期时间选择器（不可选未来）
-- 备注 @提及伴侣
-- 编辑预填充 + 删除 3 秒可撤销
+### 启动与认证
+- Splash 启动页（品牌展示 + Session 校验 + 自动登录/续期）
+- 手机号登录/注册页（密码模式，Supabase Auth）
+- 微信登录（开发模式，模拟 token）
+- 邀请码绑定伴侣（注册时填写，服务端核验）
 
 ### 主页
 - 三视角卡片（我的/TA的/共同）+ 左右滑动 + 箭头切换
-- 月份选择器（年/月滚轮，不能选未来）
-- 金额显隐 + 滚动动画（跨视角/月份持久化）
-- 账单行点击右侧滑入详情
-- 下拉刷新（>60px 触发 + 3 秒冷却）+ 离线提示
+- "共同"视角为聚合视图，显示全部可见账单
+- 视角切换联动卡片金额（支出/收入/结余按视图过滤）
+- 月份选择器（年/月滚轮，不能选未来月份）
+- 金额显隐 + 滚动动画
+- 账单行左滑编辑/删除 + 点击查看详情
+- 下拉刷新（>60px 触发 + 3秒冷却）+ 离线提示
 - 空状态点击快捷记账
 - 未绑定伴侣时顶部横幅提示
 
-### 账单页
+### 记账（AddRecord）
+- 金额校验 + 分类必选 + 红色抖动提示
+- 成员选择（我/TA/共同），伴侣未绑定时"TA"锁定
+- 数字键盘 + 收支切换 + 分类网格
+- 账户选择器（底部弹出含余额）
+- 日期时间选择器（不可选未来）
+- 备注输入 + @提及伴侣快捷插入
+- 离线时自动入队，联网后同步
+
+### 账单页（Bills）
 - 筛选抽屉（成员/分类/金额/账户，80%宽）
 - 搜索防抖 300ms + 匹配高亮
-- 收支切换标签（支出红/收入绿）
+- 收支切换标签
 - 排序切换（时间/金额/分类）
-- 长按批量模式 + 左滑编辑删除
-- 统计栏（月结余 + 日均支出 + 计算说明浮层）
+- 左滑编辑删除
+- 统计栏（月结余 + 日均支出）
 
-### 报表页
+### 报表页（Reports）
 - 日历视图（日期点击展开/收起 + 左右滑动切月 + 今日高亮）
 - 三种图表：饼图（分类占比）/ 面积图（每日趋势）/ 柱状图（成员对比）
 - 图表下钻 + 二级分类明细
-- 图表分享（保存图片/系统分享 + Logo 日期水印）
-- 统计栏（月支出 + 日均支出 + 计算详情浮层）
+- 图表分享（保存图片/系统分享）
 
-### 资产管理
+### 资产页（Assets）
 - 账户列表 + 添加/编辑/删除
 - 余额调整 + 调整记录
-- 删除账户时关联账单迁移
 
-### 情侣空间
-- 情侣资料页（头像/昵称编辑 + 记账天数 + 邀请码生成/分享/复制）
-- 对方权限设置（编辑/删除权限开关）
-- 共同数据可见性设置
-- 6位邀请码 + 7天有效期
-- 解绑二次确认 + 账单处理选择
+### 个人中心（Profile）
+- 情侣资料页（头像/昵称编辑 + 记账天数 + 统计）
+- 邀请码生成/复制/分享 + 加入空间（输入邀请码）
+- 解绑二次确认
+- 功能入口：收支分类 / 多账本 / 预算 / 存钱 / 购物清单 / 标签 / 汇率 / 小工具
+- 账单/资产入口：账单管理 / 定时记账 / 账单报告 / 资产
+- 记账偏好：设置默认记账人和默认收支类型（localStorage 持久化）
+- 个性化：5主题色 + 3档字体 + 实时预览
 
-### 个人中心
-- 收支分类管理（新建/编辑/删除 + 系统分类 + 账单迁移）
-- 预算设置（总预算 + 分类预算 + 预警阈值 + 超预算提醒）
-- 多账本管理（新建/编辑/默认/归档/删除）
-- 标签管理（新建/编辑/删除 + 颜色选择）
-- 账单报告（周期选择 + 环形图 + TOP5 + 成员对比 + 趋势图 + 趣味统计）
-- 定时记账（启用/禁用 + 周期 + 分类 + 成员 + 账户）
-- 存钱计划（目标设定 + 进度条 + 存入记录 + 达成庆祝动画）
-- 购物清单（添加/编辑/删除 + 购买勾选 + 预估/实际价格 + 统计）
+### 设置页（Settings）
+- 伴侣管理：绑定管理 / 对方权限设置 / 共同数据可见性
+- 通知设置：记账提醒 / 预算预警 / 伴侣通知 / 日报周报（开关持久化）
+- 同步方式：实时同步 / 仅WiFi / 手动同步 + 手动同步按钮
+- 数据管理：备份（JSON下载）/ 恢复（文件上传）/ 导出CSV / 清空数据
+- 深色模式：多主题循环切换
+- 快捷指令 / 帮助中心 / 联系客服（模拟对话） / 官方媒体 / 分享 / 关于
+- 注销账号（二次确认 + 清除数据 + 退出登录）
+- 退出登录
 
 ### 辅助工具
-- 汇率换算（12币种 + 双向兑换 + 汇率刷新）
-- 小工具箱（折扣计算 + AA分摊 + 分期计算 + 预设快捷按钮）
-- 个性化设置（5主题色 + 3档字体 + 实时预览 + 导航栏联动）
+- 汇率换算（12币种 + 双向兑换）
+- 小工具箱（折扣计算 + AA分摊 + 分期计算）
+- 购物清单（添加/编辑/删除 + 购买勾选 + 预估/实际价格）
+- 存钱计划（目标设定 + 进度条 + 达成动画）
 
 ## 设计规范
 
@@ -86,35 +103,11 @@ React 19 + TypeScript + Vite + Supabase + recharts
 | 支出 | #E74C3C |
 | 收入 | #27AE60 |
 
-## 页面流程
-
-```
-Splash（1.5s 品牌展示 + Token 校验）
-  ├─ Token 有效 → 主页
-  ├─ Token 过期 → 静默刷新 → 成功→主页 / 失败→登录页
-  └─ 无 Token → 登录页
-       └─ 登录成功 → 首次→引导页→主页 / 非首次→主页
-```
-
-## API 接口
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | /api/auth/wechat-login | 微信登录 |
-| POST | /api/auth/phone-login | 手机验证码登录 |
-| POST | /api/auth/register | 注册 |
-| POST | /api/auth/refresh | 刷新 Token |
-| POST | /api/auth/logout | 退出登录 |
-| POST | /api/couple/invite | 生成邀请码 |
-| POST | /api/couple/bind | 绑定伴侣 |
-| POST | /api/couple/unbind | 解除伴侣关系 |
-| GET | /api/couple/status | 查询伴侣状态 |
-
 ## 怎么跑
 
 ```bash
 npm install
-npm run dev      # 开发服务器
+npm run dev      # 开发服务器 (Vite)
 npm run build    # 构建生产包
 npm run preview  # 预览生产包
 ```
@@ -124,26 +117,53 @@ npm run preview  # 预览生产包
 ```
 src/
 ├── lib/
-│   ├── auth.ts         # Token 管理（存储/刷新/校验）
-│   ├── api.ts          # API 请求封装（拦截器/错误映射/离线队列）
-│   ├── bills.ts        # 账单 CRUD（Supabase + localStorage 双写）
-│   ├── accounts.ts     # 账户管理
-│   └── couple.ts       # 情侣关系管理（资料/邀请码/权限/可见性）
+│   ├── auth.ts              # Supabase Auth Session 管理
+│   ├── api.ts               # API 请求封装（Token 拦截器）
+│   ├── supabase.ts          # Supabase 客户端
+│   ├── bills.ts             # 账单 CRUD（Supabase + localStorage 双写/合并）
+│   ├── accounts.ts          # 账户管理
+│   ├── couple.ts            # 情侣系统（localStorage 缓存 + Supabase 桥接）
+│   └── couple-supabase.ts   # 情侣系统 Supabase 服务端操作
 ├── pages/
-│   ├── Splash.tsx       # 启动页
-│   ├── LoginPage.tsx    # 登录页（微信/Apple/手机号）
-│   ├── ThemeSelect.tsx  # 主题引导页
-│   ├── Home.tsx         # 主页（三视角卡片+账单列表）
-│   ├── Bills.tsx        # 账单页（筛选/搜索/排序/批量）
-│   ├── Reports.tsx      # 报表页（日历/图表/下钻）
-│   ├── Profile.tsx      # 个人中心（情侣资料/功能入口）
-│   ├── AddRecord.tsx    # 记账弹窗
-│   ├── Settings.tsx     # 设置页
-│   └── ...              # 分类/预算/账本/标签/存钱/购物等管理页
-└── components/
-    └── DynamicIsland.tsx # 底部导航栏
+│   ├── Splash.tsx            # 启动页
+│   ├── LoginPage.tsx         # 登录页（微信/手机号入口）
+│   ├── PhoneLogin.tsx        # 手机号登录页
+│   ├── PhoneRegister.tsx     # 手机号注册页（含邀请码步骤）
+│   ├── ThemeSelect.tsx       # 主题引导页
+│   ├── Home.tsx              # 主页（三视角卡片+账单列表）
+│   ├── Bills.tsx             # 账单页（筛选/搜索/排序）
+│   ├── Reports.tsx           # 报表页（日历/图表/下钻）
+│   ├── Profile.tsx           # 个人中心（情侣资料/功能入口）
+│   ├── AddRecord.tsx         # 记账弹窗
+│   ├── Settings.tsx          # 设置页
+│   ├── SettingsSubPages.tsx  # 设置子页面（快捷指令/帮助/客服/媒体/分享/关于）
+│   ├── Assets.tsx            # 资产管理
+│   ├── BillDetail.tsx        # 账单详情
+│   ├── BillReport.tsx        # 账单报告
+│   ├── MonthPicker.tsx       # 月份选择器
+│   ├── BillingPreferences.tsx # 记账偏好
+│   ├── CategoryManager.tsx   # 收支分类管理
+│   ├── BudgetManager.tsx     # 预算管理
+│   ├── LedgerManager.tsx     # 多账本管理
+│   ├── TagManager.tsx        # 标签管理
+│   ├── ScheduledTasks.tsx    # 定时记账
+│   ├── SavingPlan.tsx        # 存钱计划
+│   ├── ShoppingList.tsx      # 购物清单
+│   ├── ExchangeRate.tsx      # 汇率换算
+│   ├── Toolbox.tsx           # 小工具箱
+│   └── Personalization.tsx   # 个性化设置
+├── components/
+│   └── DynamicIsland.tsx     # 底部导航栏
+└── main.tsx                  # 入口
+
+supabase/
+└── migrations/
+    ├── 001_create_bills.sql          # bills 表 + RLS 策略
+    ├── 002_create_couples.sql        # couples/invite_codes 表 + 伴侣 RLS
+    ├── 003_fix_book_id_nullable.sql   # 修复 book_id NOT NULL 约束
+    └── 004_drop_bills_user_id_fkey.sql # 删除冗余外键约束
 ```
 
 ## 状态
 
-🟢 进行中 — M1-M12 已完成
+🟢 进行中

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { isTokenValid, isTokenExpiredButRefreshable, silentRefresh } from '../lib/auth'
+import { initAuthCache, migrateLegacyAuth } from '../lib/auth'
+import { syncCoupleFromSupabase } from '../lib/couple'
 import './Splash.css'
 
 interface Props {
@@ -11,6 +12,7 @@ export default function Splash({ onGoMain, onGoLogin }: Props) {
   const [fadeOut, setFadeOut] = useState(false)
   const minTimePassed = useRef(false)
   const initDone = useRef(false)
+  const authOk = useRef(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -29,22 +31,19 @@ export default function Splash({ onGoMain, onGoLogin }: Props) {
   const doNavigate = () => {
     setFadeOut(true)
     setTimeout(() => {
-      if (isTokenValid()) {
+      if (authOk.current) {
+        syncCoupleFromSupabase().catch(() => {})
         onGoMain()
-        return
+      } else {
+        onGoLogin()
       }
-      if (isTokenExpiredButRefreshable()) {
-        silentRefresh().then(success => {
-          if (success) onGoMain()
-          else onGoLogin()
-        })
-        return
-      }
-      onGoLogin()
     }, 300)
   }
 
   const runInit = async () => {
+    migrateLegacyAuth()
+    authOk.current = await initAuthCache()
+    // 快速加载动画
     await new Promise(r => setTimeout(r, 200))
   }
 

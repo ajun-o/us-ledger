@@ -48,7 +48,7 @@ export default function AddRecord({ onClose, onSave, onError, defaultMember = 'j
     const accts = fetchAccounts()
     setAccounts(accts)
     if (!account && accts.length > 0) setAccount(accts[0])
-    import('../lib/bills').then(m => m.fetchBills().then(setBills).catch(() => {}))
+    import('../lib/bills').then(m => m.fetchBills().then(m.transformBillsPerspective).then(setBills).catch(() => {}))
   }, [])
 
   const today = new Date()

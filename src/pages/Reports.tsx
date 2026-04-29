@@ -6,7 +6,7 @@ import {
   Plus,
   Calendar as CalendarIcon
 } from 'lucide-react'
-import { type BillItem, fetchBills, fetchMonthStats } from '../lib/bills'
+import { type BillItem, fetchBills, fetchMonthStats, transformBillsPerspective } from '../lib/bills'
 import MonthPicker from './MonthPicker'
 import DynamicIsland from '../components/DynamicIsland'
 import {
@@ -59,7 +59,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
         const endDate = `${selectedYear}-${m}-${String(daysInMonth).padStart(2, '0')}`
         const [stats, data] = await Promise.all([
           fetchMonthStats(selectedYear, selectedMonth),
-          fetchBills({ startDate, endDate })
+          fetchBills({ startDate, endDate }).then(transformBillsPerspective)
         ])
         if (!cancelled) {
           setMonthStats(stats)

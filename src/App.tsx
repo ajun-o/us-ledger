@@ -12,6 +12,7 @@ import Assets from './pages/Assets'
 import PhoneLogin from './pages/PhoneLogin'
 import PhoneRegister from './pages/PhoneRegister'
 import { isTokenValid, clearAuthData, setOnboardingComplete, hasCompletedOnboarding } from './lib/auth'
+import { syncCoupleFromSupabase } from './lib/couple'
 import './App.css'
 
 type Page = 'splash' | 'welcome' | 'phone-login' | 'phone-register' | 'theme' | 'main' | 'settings' | 'assets'
@@ -49,6 +50,7 @@ function App() {
 
   // ===== 登录成功后：先检查是否需要引导页 =====
   const handleAfterLogin = () => {
+    syncCoupleFromSupabase().catch(() => {})
     if (!hasCompletedOnboarding()) {
       setCurrentPage('theme')
     } else {
@@ -194,12 +196,13 @@ function App() {
               activeTab={activeTab}
               onTabChange={handleTabChange}
               onOpenSettings={handleOpenSettings}
+              onGoAssets={() => setCurrentPage('assets')}
             />
           )}
         </>
       )}
       {currentPage === 'settings' && (
-        <Settings onBack={handleBackFromSettings} onLogout={handleLogout} onOpenCouplePage={handleOpenCoupleFromSettings} />
+        <Settings onBack={handleBackFromSettings} onLogout={handleLogout} onOpenCouplePage={handleOpenCoupleFromSettings} theme={selectedTheme} onThemeChange={(t) => { localStorage.setItem(THEME_KEY, t); setSelectedTheme(t) }} />
       )}
       {currentPage === 'assets' && (
         <Assets onBack={() => setCurrentPage('main')} />

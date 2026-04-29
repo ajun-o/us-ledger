@@ -14,8 +14,8 @@ import {
 import BillDetail from './BillDetail'
 import MonthPicker from './MonthPicker'
 import DynamicIsland from '../components/DynamicIsland'
-import { type BillItem, fetchBills, updateBill, deleteBill, fetchMonthStats } from '../lib/bills'
-import { getCoupleProfile } from '../lib/couple'
+import { type BillItem, fetchBills, updateBill, deleteBill, fetchMonthStats, transformBillsPerspective } from '../lib/bills'
+import { getCoupleProfile, syncCoupleFromSupabase } from '../lib/couple'
 import './Home.css'
 
 type ViewMode = 'mine' | 'partner' | 'joint'
@@ -43,7 +43,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     return localStorage.getItem(EYE_KEY) !== 'false'
   })
   const [showViewSheet, setShowViewSheet] = useState(false)
-  const coupleProfile = getCoupleProfile()
+  const [coupleProfile, setCoupleProfile] = useState(getCoupleProfile)
   const hasPartnerBound = !!coupleProfile.partnerName
   const [animatingAmount, setAnimatingAmount] = useState(false)
 
@@ -89,8 +89,10 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
         fetchBills({ startDate, endDate, limit: 50 })
       ])
 
+      const transformedBills = await transformBillsPerspective(bills)
+
       setMonthStats({ totalExpense: stats.totalExpense, totalIncome: stats.totalIncome })
-      setRecentBills(bills)
+      setRecentBills(transformedBills)
       return true
     } catch (e) {
       console.error('加载首页数据失败', e)
@@ -101,6 +103,12 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   useEffect(() => {
     loadData()
   }, [refreshKey, loadData])
+
+  useEffect(() => {
+    syncCoupleFromSupabase().then(() => {
+      setCoupleProfile(getCoupleProfile())
+    }).catch(() => {})
+  }, [])
 
   // 下拉刷新处理
   const handlePullStart = useCallback((e: React.TouchEvent) => {
@@ -172,9 +180,17 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     }
   }, [pullState, pullDistance, loadData])
 
+  // 按视角过滤账单（member 标签已经过 transformBillsPerspective 转换）
+  // "共同" 视图显示所有可见账单（我的+TA的+共同标记的），作为聚合视图
+  const filteredBills = recentBills.filter(bill => {
+    if (viewMode === 'mine') return bill.member === 'mine'
+    if (viewMode === 'partner') return bill.member === 'partner'
+    return true // joint 视图：显示全部
+  })
+
   // 按日期分组
   const groupedBills: Record<string, BillItem[]> = {}
-  recentBills.forEach(bill => {
+  filteredBills.forEach(bill => {
     if (!groupedBills[bill.date]) groupedBills[bill.date] = []
     groupedBills[bill.date].push(bill)
   })
@@ -258,11 +274,13 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     handleDeleteBill(bill)
   }
 
-  // 动态数据（按 viewMode 分配，当前简化为全部展示）
+  // 按当前视角计算卡片金额
+  const viewExpense = filteredBills.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0)
+  const viewIncome = filteredBills.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0)
   const currentData = {
-    expense: monthStats.totalExpense.toFixed(2),
-    income: monthStats.totalIncome.toFixed(2),
-    balance: (monthStats.totalIncome - monthStats.totalExpense).toFixed(2)
+    expense: viewExpense.toFixed(2),
+    income: viewIncome.toFixed(2),
+    balance: (viewIncome - viewExpense).toFixed(2)
   }
 
   const memberLabels: Record<string, { text: string; className: string }> = {
@@ -285,7 +303,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   const viewSubtitles: Record<ViewMode, string> = {
     mine: '只看我记的账单',
     partner: hasPartnerBound ? '查看TA的账单' : '未绑定伴侣',
-    joint: '两人共同的账单'
+    joint: '两人的全部账单'
   }
 
   useEffect(() => {
@@ -497,7 +515,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
             </button>
           </div>
 
-          {recentBills.length === 0 ? (
+          {filteredBills.length === 0 ? (
             <div className="empty-state" onClick={() => onAddRecord(viewMode)}>
               <div className="empty-illustration">
                 <div className="empty-book">

@@ -122,6 +122,7 @@ export default function LoginPage({ onClose, onSuccess, onPhoneLogin, onPhoneReg
               </>
             )}
           </button>
+          <p className="wechat-dev-hint">开发模式 · 模拟登录</p>
 
           {/* 分割线 */}
           <div className="login-divider">

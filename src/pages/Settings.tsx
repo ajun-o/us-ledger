@@ -28,7 +28,8 @@ import {
   HelpCircle,
   Headphones,
   Globe,
-  Share2
+  Share2,
+  Check
 } from 'lucide-react'
 import {
   getPartnerPermission,
@@ -50,14 +51,57 @@ interface Props {
   onBack: () => void
   onLogout: () => void
   onOpenCouplePage?: () => void
+  theme: string | null
+  onThemeChange: (theme: string) => void
 }
 
-export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) {
+const NOTIFY_KEY = 'us_ledger_notify_settings'
+const SYNC_KEY = 'us_ledger_sync_method'
+
+interface NotifySettings {
+  billReminder: boolean
+  budgetAlert: boolean
+  coupleNotify: boolean
+  dailyReport: boolean
+}
+
+function loadNotify(): NotifySettings {
+  try {
+    const raw = localStorage.getItem(NOTIFY_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return { billReminder: true, budgetAlert: true, coupleNotify: true, dailyReport: false }
+}
+
+function saveNotify(s: NotifySettings) {
+  localStorage.setItem(NOTIFY_KEY, JSON.stringify(s))
+}
+
+function loadSyncMethod(): string {
+  return localStorage.getItem(SYNC_KEY) || 'realtime'
+}
+
+function saveSyncMethod(m: string) {
+  localStorage.setItem(SYNC_KEY, m)
+}
+
+export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, onThemeChange }: Props) {
   const [showPermDialog, setShowPermDialog] = useState(false)
   const [showVisDialog, setShowVisDialog] = useState(false)
   const [permission, setPermission] = useState(getPartnerPermission)
   const [visibility, setVisibility] = useState(getDataVisibility)
   const [subPage, setSubPage] = useState<string | null>(null)
+  const [toast, setToast] = useState('')
+  const [notify, setNotify] = useState<NotifySettings>(loadNotify)
+  const [syncMethod, setSyncMethod] = useState(loadSyncMethod)
+  const [showSyncPicker, setShowSyncPicker] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false)
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 2000)
+  }
 
   const handleSavePermission = () => {
     savePartnerPermission(permission)
@@ -67,6 +111,118 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
   const handleSaveVisibility = () => {
     saveDataVisibility(visibility)
     setShowVisDialog(false)
+  }
+
+  const toggleNotify = (key: keyof NotifySettings) => {
+    const next = { ...notify, [key]: !notify[key] }
+    setNotify(next)
+    saveNotify(next)
+    showToast('设置已保存')
+  }
+
+  const handleSyncChange = (method: string) => {
+    setSyncMethod(method)
+    saveSyncMethod(method)
+    setShowSyncPicker(false)
+    showToast(method === 'realtime' ? '已切换为实时同步' : method === 'wifi' ? '已切换为仅WiFi同步' : '已切换为手动同步')
+  }
+
+  const handleManualSync = async () => {
+    showToast('正在同步...')
+    try {
+      const { syncQueue, getQueueSize } = await import('../lib/bills')
+      const remaining = await syncQueue()
+      if (remaining === 0) showToast('同步完成')
+      else showToast(`同步完成，${remaining} 条待同步`)
+    } catch { showToast('同步失败，请检查网络') }
+  }
+
+  const handleBackup = () => {
+    const data: Record<string, unknown> = {}
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('us_ledger_')) {
+        try {
+          data[key] = JSON.parse(localStorage.getItem(key) || '')
+        } catch { data[key] = localStorage.getItem(key) }
+      }
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `us-ledger-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('备份文件已下载')
+  }
+
+  const handleRestore = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+      try {
+        const text = await file.text()
+        const data = JSON.parse(text)
+        let count = 0
+        for (const [key, value] of Object.entries(data)) {
+          if (key.startsWith('us_ledger_') && key !== 'us_ledger_auth') {
+            localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value))
+            count++
+          }
+        }
+        showToast(`已恢复 ${count} 项数据，请刷新页面`)
+      } catch { showToast('文件格式错误，无法恢复') }
+    }
+    input.click()
+  }
+
+  const handleExportCSV = async () => {
+    try {
+      const { fetchBills } = await import('../lib/bills')
+      const bills = await fetchBills({ limit: 9999 })
+      const header = '日期,时间,类型,分类,金额,成员,备注,账户\n'
+      const rows = bills.map(b => {
+        const safe = (s: string) => `"${(s || '').replace(/"/g, '""')}"`
+        return [b.date, b.time, b.type === 'expense' ? '支出' : '收入', b.categoryName, b.amount, b.member, safe(b.note), safe(b.account)].join(',')
+      }).join('\n')
+      const BOM = '﻿'
+      const blob = new Blob([BOM + header + rows], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `us-ledger-bills-${new Date().toISOString().slice(0, 10)}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+      showToast('账单已导出为 CSV')
+    } catch { showToast('导出失败') }
+  }
+
+  const handleClearData = () => {
+    const keysToRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('us_ledger_') && key !== 'us_ledger_billing_prefs' && key !== 'us_ledger_notify_settings' && key !== 'us_ledger_sync_method') {
+        keysToRemove.push(key)
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k))
+    setShowClearConfirm(false)
+    showToast('数据已清空，请刷新页面')
+  }
+
+  const handleDeleteAccount = () => {
+    const keysToRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('us_ledger_')) keysToRemove.push(key)
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k))
+    setShowDeleteAccount(false)
+    onLogout()
   }
 
   const handleItemClick = (item: typeof sections[0]['items'][0]) => {
@@ -83,9 +239,31 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
         case 'service': setSubPage('customer-service'); break
         case 'media': setSubPage('official-media'); break
         case 'about': setSubPage('about'); break
+        case 'sync': setShowSyncPicker(true); break
+        case 'manual-sync': handleManualSync(); break
+        case 'backup': handleBackup(); break
+        case 'restore': handleRestore(); break
+        case 'export': handleExportCSV(); break
+        case 'clear': setShowClearConfirm(true); break
+        case 'dark': toggleTheme(); break
+        case 'delete-account': setShowDeleteAccount(true); break
       }
+      return
     }
+    // 无 action 的项 → toast
+    const label = 'label' in item ? item.label : ''
+    showToast(`${label}功能开发中`)
   }
+
+  const toggleTheme = () => {
+    const themes = ['default', 'dark', 'warm', 'cool']
+    const currentIdx = themes.indexOf(theme || 'default')
+    const next = themes[(currentIdx + 1) % themes.length]
+    onThemeChange(next)
+    showToast(`主题已切换为: ${next}`)
+  }
+
+  const syncLabel = syncMethod === 'realtime' ? '实时同步' : syncMethod === 'wifi' ? '仅WiFi同步' : '手动同步'
 
   const sections = [
     {
@@ -108,33 +286,32 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
     {
       title: '通知设置',
       items: [
-        { icon: Bell, label: '记账提醒', toggle: true, color: '#636E72' },
-        { icon: AlertTriangle, label: '预算预警', toggle: true, color: '#F4A261' },
-        { icon: Users, label: '伴侣记账通知', toggle: true, color: '#E74C3C' },
-        { icon: FileText, label: '日报/周报', toggle: false, color: '#636E72' }
+        { icon: Bell, label: '记账提醒', toggleKey: 'billReminder' as const, color: '#636E72' },
+        { icon: AlertTriangle, label: '预算预警', toggleKey: 'budgetAlert' as const, color: '#F4A261' },
+        { icon: Users, label: '伴侣记账通知', toggleKey: 'coupleNotify' as const, color: '#E74C3C' },
+        { icon: FileText, label: '日报/周报', toggleKey: 'dailyReport' as const, color: '#636E72' }
       ]
     },
     {
       title: '记账同步',
       items: [
-        { icon: RefreshCw, label: '同步方式', description: '实时同步', color: '#27AE60' },
-        { icon: Wifi, label: '仅WiFi同步', toggle: false, color: '#0984E3' },
-        { icon: Hand, label: '手动同步', color: '#636E72' }
+        { icon: RefreshCw, label: '同步方式', description: syncLabel, color: '#27AE60', action: 'sync' as const },
+        { icon: Hand, label: '手动同步', description: '立即同步离线队列', color: '#636E72', action: 'manual-sync' as const }
       ]
     },
     {
       title: '数据管理',
       items: [
-        { icon: Database, label: '数据备份', color: '#27AE60' },
-        { icon: Download, label: '数据恢复', color: '#0984E3' },
-        { icon: Upload, label: '导出账单', color: '#6C5CE7' },
-        { icon: Trash2, label: '清空数据', danger: true, color: '#E74C3C' }
+        { icon: Database, label: '数据备份', description: '导出数据到文件', color: '#27AE60', action: 'backup' as const },
+        { icon: Download, label: '数据恢复', description: '从备份文件恢复', color: '#0984E3', action: 'restore' as const },
+        { icon: Upload, label: '导出账单', description: '导出为 CSV 文件', color: '#6C5CE7', action: 'export' as const },
+        { icon: Trash2, label: '清空数据', danger: true, description: '清除所有本地数据', color: '#E74C3C', action: 'clear' as const }
       ]
     },
     {
       title: '显示',
       items: [
-        { icon: Moon, label: '深色模式', description: '跟随系统', color: '#636E72' }
+        { icon: Moon, label: '深色模式', description: `当前: ${theme || '默认'}`, color: '#636E72', action: 'dark' as const }
       ]
     },
     {
@@ -166,7 +343,7 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
     {
       title: '账户操作',
       items: [
-        { icon: UserX, label: '注销账号', danger: true, color: '#E74C3C' }
+        { icon: UserX, label: '注销账号', danger: true, description: '永久删除所有数据', color: '#E74C3C', action: 'delete-account' as const }
       ]
     }
   ]
@@ -209,8 +386,11 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
                       </div>
                     </div>
                     <div className="item-right">
-                      {ext.toggle !== undefined ? (
-                        <div className={`toggle ${ext.toggle ? 'active' : ''}`}>
+                      {ext.toggleKey !== undefined ? (
+                        <div
+                          className={`toggle ${notify[ext.toggleKey as keyof NotifySettings] ? 'active' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); toggleNotify(ext.toggleKey as keyof NotifySettings) }}
+                        >
                           <div className="toggle-knob"></div>
                         </div>
                       ) : (
@@ -333,6 +513,91 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
           </div>
         </div>
       )}
+
+      {/* 同步方式选择 */}
+      {showSyncPicker && (
+        <div className="settings-dialog-overlay" onClick={() => setShowSyncPicker(false)}>
+          <div className="settings-dialog" onClick={e => e.stopPropagation()}>
+            <div className="dialog-header">
+              <h3>同步方式</h3>
+              <button className="dialog-close" onClick={() => setShowSyncPicker(false)}><X size={20} /></button>
+            </div>
+            <div className="dialog-body">
+              <div className={`dialog-item ${syncMethod === 'realtime' ? 'selected' : ''}`} onClick={() => handleSyncChange('realtime')}>
+                <div className="dialog-item-left">
+                  <RefreshCw size={18} color="#27AE60" />
+                  <div>
+                    <span className="dialog-item-label">实时同步</span>
+                    <span className="dialog-item-desc">有网络时立即同步到云端</span>
+                  </div>
+                </div>
+                {syncMethod === 'realtime' && <Check size={18} color="#27AE60" />}
+              </div>
+              <div className={`dialog-item ${syncMethod === 'wifi' ? 'selected' : ''}`} onClick={() => handleSyncChange('wifi')}>
+                <div className="dialog-item-left">
+                  <Wifi size={18} color="#0984E3" />
+                  <div>
+                    <span className="dialog-item-label">仅WiFi同步</span>
+                    <span className="dialog-item-desc">仅在WiFi环境下同步</span>
+                  </div>
+                </div>
+                {syncMethod === 'wifi' && <Check size={18} color="#0984E3" />}
+              </div>
+              <div className={`dialog-item ${syncMethod === 'manual' ? 'selected' : ''}`} onClick={() => handleSyncChange('manual')}>
+                <div className="dialog-item-left">
+                  <Hand size={18} color="#636E72" />
+                  <div>
+                    <span className="dialog-item-label">手动同步</span>
+                    <span className="dialog-item-desc">仅在点击时同步</span>
+                  </div>
+                </div>
+                {syncMethod === 'manual' && <Check size={18} color="#636E72" />}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 清空数据确认 */}
+      {showClearConfirm && (
+        <div className="settings-dialog-overlay" onClick={() => setShowClearConfirm(false)}>
+          <div className="settings-dialog" onClick={e => e.stopPropagation()}>
+            <div className="dialog-header">
+              <h3>清空数据</h3>
+              <button className="dialog-close" onClick={() => setShowClearConfirm(false)}><X size={20} /></button>
+            </div>
+            <div className="dialog-body">
+              <p className="dialog-warning">确定要清空所有本地数据吗？此操作将清除账单、情侣绑定等数据。设置和偏好会保留。</p>
+            </div>
+            <div className="dialog-footer">
+              <button className="dialog-btn secondary" onClick={() => setShowClearConfirm(false)}>取消</button>
+              <button className="dialog-btn danger" onClick={handleClearData}>确认清空</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 注销账号确认 */}
+      {showDeleteAccount && (
+        <div className="settings-dialog-overlay" onClick={() => setShowDeleteAccount(false)}>
+          <div className="settings-dialog" onClick={e => e.stopPropagation()}>
+            <div className="dialog-header">
+              <h3>注销账号</h3>
+              <button className="dialog-close" onClick={() => setShowDeleteAccount(false)}><X size={20} /></button>
+            </div>
+            <div className="dialog-body">
+              <p className="dialog-warning">注销后将清除所有本地数据并退出登录。云端账单数据不会删除（请在 Supabase 中手动删除）。确定要继续吗？</p>
+            </div>
+            <div className="dialog-footer">
+              <button className="dialog-btn secondary" onClick={() => setShowDeleteAccount(false)}>取消</button>
+              <button className="dialog-btn danger" onClick={handleDeleteAccount}>确认注销</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && <div className="settings-toast">{toast}</div>}
     </div>
   )
 }

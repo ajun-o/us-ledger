@@ -1,7 +1,13 @@
 // ======= API 请求封装 =======
 // 统一拦截器：Token 自动携带、401 静默刷新重试、业务错误码映射、网络异常处理
 
-import { getAccessToken, silentRefresh, clearAuthData } from './auth'
+import { silentRefresh, clearAuthData } from './auth'
+import { supabase } from './supabase'
+
+async function getSessionToken(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token ?? null
+}
 
 // 业务错误码映射表
 const ERROR_MAP: Record<number, string> = {
@@ -55,7 +61,7 @@ export async function api<T = unknown>(url: string, options: RequestOptions = {}
   }
 
   if (!skipAuth) {
-    const token = getAccessToken()
+    const token = await getSessionToken()
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
 

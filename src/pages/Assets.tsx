@@ -21,7 +21,7 @@ import {
   addAdjustment,
   getBillAccountNames
 } from '../lib/accounts'
-import { type BillItem, fetchBills } from '../lib/bills'
+import { type BillItem, fetchBills, transformBillsPerspective } from '../lib/bills'
 import './Assets.css'
 
 interface Props {
@@ -59,12 +59,12 @@ export default function Assets({ onBack }: Props) {
   useEffect(() => {
     const accts = fetchAccounts()
     setAccounts(accts)
-    fetchBills().then(setBills).catch(() => setBills([]))
+    fetchBills().then(transformBillsPerspective).then(setBills).catch(() => setBills([]))
   }, [])
 
   const refreshData = () => {
     setAccounts(fetchAccounts())
-    fetchBills().then(setBills).catch(() => setBills([]))
+    fetchBills().then(transformBillsPerspective).then(setBills).catch(() => setBills([]))
   }
 
   const totalBalance = accounts.reduce((s, a) => s + getAccountBalance(a.name, bills), 0)

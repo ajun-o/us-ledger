@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import './MonthPicker.css'
 
 interface Props {
@@ -9,64 +9,99 @@ interface Props {
 }
 
 const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+const ITEM_HEIGHT = 44
+
+const now = new Date()
+const CURRENT_YEAR = now.getFullYear()
+const CURRENT_MONTH = now.getMonth() + 1
+const START_YEAR = 2020
+
+const YEARS: number[] = []
+for (let y = START_YEAR; y <= CURRENT_YEAR; y++) YEARS.push(y)
 
 export default function MonthPicker({ year, month, onConfirm, onClose }: Props) {
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth() + 1
-
-  const startYear = 2020
-  const years: number[] = []
-  for (let y = startYear; y <= currentYear; y++) years.push(y)
-
   const [selectedYear, setSelectedYear] = useState(year)
   const [selectedMonth, setSelectedMonth] = useState(month)
 
   const yearRef = useRef<HTMLDivElement>(null)
   const monthRef = useRef<HTMLDivElement>(null)
+  const yearTimer = useRef<ReturnType<typeof setTimeout>>()
+  const monthTimer = useRef<ReturnType<typeof setTimeout>>()
 
+  // 初始化滚动位置
   useEffect(() => {
-    // 滚动到选中项
-    const yearIdx = years.indexOf(selectedYear)
-    const monthIdx = selectedMonth - 1
-    if (yearRef.current) {
-      const itemHeight = 44
-      yearRef.current.scrollTop = yearIdx * itemHeight - 88
+    const yearIdx = YEARS.indexOf(year)
+    if (yearRef.current && yearIdx >= 0) {
+      yearRef.current.scrollTop = yearIdx * ITEM_HEIGHT
     }
-    if (monthRef.current) {
-      const itemHeight = 44
-      monthRef.current.scrollTop = monthIdx * itemHeight - 88
+    if (monthRef.current && month >= 1 && month <= 12) {
+      monthRef.current.scrollTop = (month - 1) * ITEM_HEIGHT
     }
   }, [])
 
-  const isFutureMonth = (y: number, m: number) => {
-    if (y > currentYear) return true
-    if (y === currentYear && m > currentMonth) return true
+  const isFuture = useCallback((y: number, m: number) => {
+    if (y > CURRENT_YEAR) return true
+    if (y === CURRENT_YEAR && m > CURRENT_MONTH) return true
     return false
-  }
+  }, [])
 
   const handleConfirm = () => {
-    if (isFutureMonth(selectedYear, selectedMonth)) return
+    if (isFuture(selectedYear, selectedMonth)) return
     onConfirm(selectedYear, selectedMonth)
   }
 
-  const handleYearScroll = () => {
+  // 滚动检测 — 用 debounce 避免过度触发
+  const handleYearScroll = useCallback(() => {
     if (!yearRef.current) return
-    const itemHeight = 44
-    const idx = Math.round(yearRef.current.scrollTop / itemHeight)
-    if (idx >= 0 && idx < years.length) {
-      setSelectedYear(years[idx])
+    clearTimeout(yearTimer.current)
+    yearTimer.current = setTimeout(() => {
+      if (!yearRef.current) return
+      const idx = Math.round(yearRef.current.scrollTop / ITEM_HEIGHT)
+      const clamped = Math.max(0, Math.min(YEARS.length - 1, idx))
+      setSelectedYear(YEARS[clamped])
+    }, 80)
+  }, [])
+
+  const handleMonthScroll = useCallback(() => {
+    if (!monthRef.current) return
+    clearTimeout(monthTimer.current)
+    monthTimer.current = setTimeout(() => {
+      if (!monthRef.current) return
+      const idx = Math.round(monthRef.current.scrollTop / ITEM_HEIGHT)
+      const clamped = Math.max(0, Math.min(11, idx))
+      const m = clamped + 1
+      // 未来月份不可选，保持在当前最大可用月
+      if (isFuture(selectedYear, m)) {
+        const maxMonth = selectedYear >= CURRENT_YEAR ? CURRENT_MONTH : 12
+        setSelectedMonth(maxMonth)
+        if (monthRef.current) {
+          monthRef.current.scrollTop = (maxMonth - 1) * ITEM_HEIGHT
+        }
+      } else {
+        setSelectedMonth(m)
+      }
+    }, 80)
+  }, [selectedYear, isFuture])
+
+  // 点击选择
+  const selectYear = (y: number) => {
+    setSelectedYear(y)
+    const idx = YEARS.indexOf(y)
+    if (yearRef.current) {
+      yearRef.current.scrollTo({ top: idx * ITEM_HEIGHT, behavior: 'smooth' })
     }
   }
 
-  const handleMonthScroll = () => {
-    if (!monthRef.current) return
-    const itemHeight = 44
-    const idx = Math.round(monthRef.current.scrollTop / itemHeight)
-    if (idx >= 0 && idx < 12) {
-      setSelectedMonth(idx + 1)
+  const selectMonth = (m: number) => {
+    if (isFuture(selectedYear, m)) return
+    setSelectedMonth(m)
+    if (monthRef.current) {
+      monthRef.current.scrollTo({ top: (m - 1) * ITEM_HEIGHT, behavior: 'smooth' })
     }
   }
+
+  const containerHeight = ITEM_HEIGHT * 5 // 5 项可见
+  const spacerHeight = ITEM_HEIGHT * 2  // 上下各留 2 项高度的空白，让首尾项也能居中
 
   return (
     <div className="month-picker-overlay" onClick={onClose}>
@@ -78,44 +113,60 @@ export default function MonthPicker({ year, month, onConfirm, onClose }: Props) 
         </div>
 
         <div className="picker-body">
+          {/* 年份列 */}
           <div className="picker-column">
             <div className="picker-label">年</div>
-            <div className="picker-scroll" ref={yearRef} onScroll={handleYearScroll}>
-              <div className="picker-spacer"></div>
-              {years.map(y => (
+            <div
+              className="picker-scroll"
+              ref={yearRef}
+              onScroll={handleYearScroll}
+              style={{ height: containerHeight }}
+            >
+              <div style={{ height: spacerHeight }} />
+              {YEARS.map(y => (
                 <div
                   key={y}
                   className={`picker-item ${y === selectedYear ? 'active' : ''}`}
-                  onClick={() => setSelectedYear(y)}
+                  style={{ height: ITEM_HEIGHT }}
+                  onClick={() => selectYear(y)}
                 >
-                  {y}年
+                  {y}
                 </div>
               ))}
-              <div className="picker-spacer"></div>
+              <div style={{ height: spacerHeight }} />
             </div>
           </div>
 
+          {/* 月份列 */}
           <div className="picker-column">
             <div className="picker-label">月</div>
-            <div className="picker-scroll" ref={monthRef} onScroll={handleMonthScroll}>
-              <div className="picker-spacer"></div>
-              {MONTHS.map((m, i) => {
-                const disabled = isFutureMonth(selectedYear, i + 1)
+            <div
+              className="picker-scroll"
+              ref={monthRef}
+              onScroll={handleMonthScroll}
+              style={{ height: containerHeight }}
+            >
+              <div style={{ height: spacerHeight }} />
+              {MONTHS.map((name, i) => {
+                const m = i + 1
+                const disabled = isFuture(selectedYear, m)
                 return (
                   <div
-                    key={m}
-                    className={`picker-item ${(i + 1) === selectedMonth ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
-                    onClick={() => !disabled && setSelectedMonth(i + 1)}
+                    key={name}
+                    className={`picker-item ${m === selectedMonth ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
+                    style={{ height: ITEM_HEIGHT }}
+                    onClick={() => selectMonth(m)}
                   >
-                    {m}
+                    {name}
                   </div>
                 )
               })}
-              <div className="picker-spacer"></div>
+              <div style={{ height: spacerHeight }} />
             </div>
           </div>
 
-          <div className="picker-highlight"></div>
+          {/* 居中高亮条 */}
+          <div className="picker-highlight" />
         </div>
       </div>
     </div>

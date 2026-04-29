@@ -4,7 +4,6 @@ import {
   Settings,
   ChevronRight,
   Palette,
-  HelpCircle,
   List,
   BookOpen,
   Target,
@@ -21,10 +20,7 @@ import {
   Box,
   Repeat,
   Lightbulb,
-  Zap,
-  Phone,
   Share2,
-  Info,
   X,
   Edit3,
   Image,
@@ -35,6 +31,7 @@ import {
   Check
 } from 'lucide-react'
 import DynamicIsland from '../components/DynamicIsland'
+import BillingPreferences from './BillingPreferences'
 import CategoryManager from './CategoryManager'
 import BudgetManager from './BudgetManager'
 import LedgerManager from './LedgerManager'
@@ -50,9 +47,12 @@ import {
   getCoupleProfile,
   saveCoupleProfile,
   getAccountingDays,
-  generateInviteCode,
+  generateAndSyncInviteCode,
   getInviteCode,
-  hasPartner
+  hasPartner,
+  syncCoupleFromSupabase,
+  unbindCoupleFull,
+  bindWithPartnerInviteCode,
 } from '../lib/couple'
 import './Profile.css'
 
@@ -62,9 +62,10 @@ interface Props {
   activeTab: TabType
   onTabChange: (tab: TabType) => void
   onOpenSettings: () => void
+  onGoAssets: () => void
 }
 
-export default function Profile({ activeTab, onTabChange, onOpenSettings }: Props) {
+export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAssets }: Props) {
   const [showCouplePage, setShowCouplePage] = useState(false)
   const [showCategoryManager, setShowCategoryManager] = useState(false)
   const [showBudgetManager, setShowBudgetManager] = useState(false)
@@ -84,11 +85,20 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
   const [unbindStep, setUnbindStep] = useState(0) // 0=初始, 1=二次确认
   const [showInviteSheet, setShowInviteSheet] = useState(false)
   const [inviteCopied, setInviteCopied] = useState(false)
+  const [showJoinInput, setShowJoinInput] = useState(false)
+  const [joinCode, setJoinCode] = useState('')
+  const [joinLoading, setJoinLoading] = useState(false)
+  const [joinError, setJoinError] = useState('')
+  const [showBillingPref, setShowBillingPref] = useState(false)
+  const [toast, setToast] = useState('')
 
   const accountingDays = getAccountingDays()
   const partnerBound = hasPartner()
 
   useEffect(() => {
+    syncCoupleFromSupabase().then(() => {
+      setProfile(getCoupleProfile())
+    }).catch(() => {})
     const flag = localStorage.getItem('us_ledger_open_couple')
     if (flag === 'true') {
       localStorage.removeItem('us_ledger_open_couple')
@@ -101,30 +111,38 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
     setEditValue(profile[field])
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editValue.trim()) return
     const updated = { ...profile, [editingField!]: editValue.trim() }
     setProfile(updated)
     saveCoupleProfile(updated)
     setEditingField(null)
+    // 同步到 Supabase user_metadata
+    try {
+      const { supabase } = await import('../lib/supabase')
+      await supabase.auth.updateUser({
+        data: { nickname: editValue.trim() }
+      })
+    } catch { /* Supabase 不可用则跳过 */ }
   }
 
-  const handleUnbind = () => {
+  const handleUnbind = async () => {
     if (unbindStep === 0) {
       setUnbindStep(1)
     } else {
-      const updated = { ...profile, partnerName: '', bindDate: '' }
-      setProfile(updated)
-      saveCoupleProfile(updated)
+      await unbindCoupleFull()
+      setProfile(prev => ({ ...prev, partnerName: '', bindDate: '' }))
       setShowUnbindConfirm(false)
       setUnbindStep(0)
     }
   }
 
-  const handleInvite = () => {
-    getInviteCode() || generateInviteCode()
-    setShowInviteSheet(true)
-    setInviteCopied(false)
+  const handleInvite = async () => {
+    const code = await generateAndSyncInviteCode()
+    if (code) {
+      setShowInviteSheet(true)
+      setInviteCopied(false)
+    }
   }
 
   const handleCopyCode = async () => {
@@ -152,6 +170,31 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
     }
   }
 
+  const handleJoinPartner = async () => {
+    if (!joinCode || joinCode.length !== 6) {
+      setJoinError('请输入6位邀请码')
+      return
+    }
+    setJoinLoading(true)
+    setJoinError('')
+    const result = await bindWithPartnerInviteCode(joinCode)
+    setJoinLoading(false)
+    if (result.success) {
+      setProfile(getCoupleProfile())
+      setShowJoinInput(false)
+      setJoinCode('')
+      setShowInviteSheet(true)
+      setInviteCopied(false)
+    } else {
+      setJoinError(result.error || '绑定失败')
+    }
+  }
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 2000)
+  }
+
   const commonFeatures = [
     { icon: List, label: '收支分类', color: '#FF6B6B' },
     { icon: BookOpen, label: '多账本', color: '#4ECDC4' },
@@ -174,24 +217,14 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
   ]
 
   const preferences = [
-    { icon: Lightbulb, label: '记账偏好' },
-    { icon: Palette, label: '个性化' },
-    { icon: Zap, label: '快捷指令' }
-  ]
-
-  const others = [
-    { icon: HelpCircle, label: '帮助' },
-    { icon: Phone, label: '联系客服' },
-    { icon: Share2, label: '官方媒体' },
-    { icon: Share2, label: '分享给朋友' },
-    { icon: Info, label: '关于' }
+    { icon: Lightbulb, label: '记账偏好' }
   ]
 
   return (
     <div className="profile-page">
       {/* 顶部 */}
       <header className="profile-header">
-        <button className="icon-btn">
+        <button className="icon-btn" onClick={() => showToast('扫码功能开发中')}>
           <ScanLine size={20} />
         </button>
         <button className="icon-btn" onClick={onOpenSettings}>
@@ -218,17 +251,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
           <ChevronRight size={20} className="arrow" />
         </div>
 
-        {/* 情侣专属功能 */}
-        <div className="couple-section">
-          <div className="couple-card" onClick={() => setShowCouplePage(true)}>
-            <div className="couple-icon">💕</div>
-            <div className="couple-info">
-              <span className="couple-title">情侣专属</span>
-              <span className="couple-desc">共同目标 · 纪念日记账 · AA计算器</span>
-            </div>
-            <ChevronRight size={16} />
-          </div>
-        </div>
+
 
         {/* 功能入口 */}
         <div className="feature-cards">
@@ -237,13 +260,6 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
             <div className="feature-text">
               <span className="feature-title">个性化</span>
               <span className="feature-desc">设置独特风格</span>
-            </div>
-          </div>
-          <div className="feature-card">
-            <HelpCircle size={20} color="#F4A261" />
-            <div className="feature-text">
-              <span className="feature-title">帮助中心</span>
-              <span className="feature-desc">疑难解答这里找</span>
             </div>
           </div>
         </div>
@@ -283,8 +299,13 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
               const Icon = item.icon
               return (
                 <div key={index} className="function-item" onClick={() => {
-                  if (item.label === '账单报告') setShowBillReport(true)
+                  if (item.label === '账单管理') onTabChange('bills')
                   if (item.label === '定时记账') setShowScheduledTasks(true)
+                  if (item.label === '账单报告') setShowBillReport(true)
+                  if (item.label === '资产') onGoAssets()
+                  if (item.label === '外卖订单') showToast('外卖订单功能开发中')
+                  if (item.label === '物品管理') showToast('物品管理功能开发中')
+                  if (item.label === '订阅管理') showToast('订阅管理功能开发中')
                 }}>
                   <div className="function-icon" style={{ background: item.color + '20' }}>
                     <Icon size={20} color={item.color} />
@@ -303,7 +324,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
               const Icon = item.icon
               return (
                 <div key={index} className="preference-item" onClick={() => {
-                  if (item.label === '个性化') setShowPersonalization(true)
+                  if (item.label === '记账偏好') setShowBillingPref(true)
                 }}>
                   <Icon size={18} />
                   <span>{item.label}</span>
@@ -313,19 +334,6 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
           </div>
         </div>
 
-        {/* 其他 */}
-        <div className="other-section">
-          {others.map((item, index) => {
-            const Icon = item.icon
-            return (
-              <div key={index} className="other-item">
-                <Icon size={18} color="#636E72" />
-                <span>{item.label}</span>
-                <ChevronRight size={16} className="arrow" />
-              </div>
-            )
-          })}
-        </div>
       </main>
 
       {/* 我们的资料页 */}
@@ -463,10 +471,41 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
                     </button>
                   </>
                 ) : (
-                  <button className="cp-action-btn invite" onClick={handleInvite}>
-                    <Link2 size={18} />
-                    <span>邀请伴侣</span>
-                  </button>
+                  <>
+                    {showJoinInput ? (
+                      <div className="cp-join-section">
+                        <div className="cp-join-input-row">
+                          <input
+                            className="cp-join-input"
+                            type="text"
+                            placeholder="输入6位邀请码"
+                            value={joinCode}
+                            onChange={e => { setJoinCode(e.target.value.toUpperCase().slice(0, 6)); setJoinError('') }}
+                            maxLength={6}
+                            autoFocus
+                          />
+                          <button className="cp-join-confirm" onClick={handleJoinPartner} disabled={joinLoading}>
+                            {joinLoading ? '绑定中...' : '确定'}
+                          </button>
+                        </div>
+                        {joinError && <p className="cp-join-error">{joinError}</p>}
+                        <button className="cp-join-cancel" onClick={() => { setShowJoinInput(false); setJoinCode(''); setJoinError('') }}>
+                          取消
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="cp-action-btns">
+                        <button className="cp-action-btn invite" onClick={handleInvite}>
+                          <Link2 size={18} />
+                          <span>邀请伴侣</span>
+                        </button>
+                        <button className="cp-action-btn join" onClick={() => setShowJoinInput(true)}>
+                          <Link2 size={18} />
+                          <span>加入空间</span>
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -521,6 +560,14 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
       )}
 
       <DynamicIsland activeTab={activeTab} onTabChange={onTabChange} />
+
+      {/* 记账偏好弹窗 */}
+      {showBillingPref && (
+        <BillingPreferences onClose={() => setShowBillingPref(false)} />
+      )}
+
+      {/* Toast */}
+      {toast && <div className="profile-toast">{toast}</div>}
     </div>
   )
 }

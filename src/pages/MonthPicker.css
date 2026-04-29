@@ -52,13 +52,14 @@
   padding: 4px 8px;
 }
 
+/* ====== 主体 ====== */
+
 .picker-body {
   display: flex;
   justify-content: center;
   gap: 40px;
-  padding: 16px 20px 20px;
+  padding: 20px 20px 28px;
   position: relative;
-  height: 264px;
 }
 
 .picker-column {
@@ -71,58 +72,53 @@
   font-size: 12px;
   color: #B2BEC3;
   margin-bottom: 8px;
-  text-transform: uppercase;
 }
 
 .picker-scroll {
-  height: 220px;
   overflow-y: auto;
-  scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
-  padding: 88px 0;
   scrollbar-width: none;
+  position: relative;
 }
 
 .picker-scroll::-webkit-scrollbar {
   display: none;
 }
 
-.picker-spacer {
-  height: 88px;
-}
-
 .picker-item {
-  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 17px;
   color: #B2BEC3;
   cursor: pointer;
-  scroll-snap-align: center;
-  transition: all 0.15s ease;
   user-select: none;
+  -webkit-user-select: none;
+  transition: color 0.12s, font-size 0.12s, font-weight 0.12s;
 }
 
 .picker-item.active {
   color: #2D3436;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 20px;
 }
 
 .picker-item.disabled {
   color: #E0E0E0;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
+/* ====== 高亮条 ====== */
+/* 与选中项居中对齐：scroll 高度 220px(5×44), 高亮条 44px */
+/* top 偏移 = 标签(~17px) + 间距(8px) + (220-44)/2 = 25 + 88 = 113px */
 .picker-highlight {
   position: absolute;
-  top: 50%;
+  top: calc(20px + 12px + 8px + 88px);
   left: 20px;
   right: 20px;
   height: 44px;
-  transform: translateY(-50%);
-  border-top: 1px solid #F0F0F0;
-  border-bottom: 1px solid #F0F0F0;
+  border-top: 1px solid #E8E8E8;
+  border-bottom: 1px solid #E8E8E8;
   pointer-events: none;
 }

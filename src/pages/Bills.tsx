@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import BillDetail from './BillDetail'
 import DynamicIsland from '../components/DynamicIsland'
-import { type BillItem, fetchBills, updateBill, deleteBill } from '../lib/bills'
+import { type BillItem, fetchBills, updateBill, deleteBill, transformBillsPerspective } from '../lib/bills'
 import { fetchAccounts } from '../lib/accounts'
 import './Bills.css'
 
@@ -95,6 +95,7 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
     let cancelled = false
     setLoading(true)
     fetchBills({ member: memberFilter !== 'all' ? memberFilter : undefined, search: debouncedSearch || undefined })
+      .then(transformBillsPerspective)
       .then(data => { if (!cancelled) { setBills(data); setLoading(false) } })
       .catch(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }

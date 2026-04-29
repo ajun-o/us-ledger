@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, ChevronDown, Download, Share2 } from 'lucide-react'
-import { type BillItem, fetchBills } from '../lib/bills'
+import { type BillItem, fetchBills, transformBillsPerspective } from '../lib/bills'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from 'recharts'
 import './BillReport.css'
 
@@ -42,7 +42,7 @@ export default function BillReport({ onClose }: Props) {
   useEffect(() => {
     setLoading(true)
     const {start, end} = getDateRange(period)
-    fetchBills({startDate:start, endDate:end}).then(data=>{setBills(data);setLoading(false)}).catch(()=>setLoading(false))
+    fetchBills({startDate:start, endDate:end}).then(transformBillsPerspective).then(data=>{setBills(data);setLoading(false)}).catch(()=>setLoading(false))
   }, [period])
 
   const totalExpense = bills.filter(b=>b.type==='expense').reduce((s,b)=>s+b.amount,0)

@@ -191,6 +191,13 @@
   margin-top: 6px;
 }
 
+.invite-code-input {
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-family: monospace;
+  font-size: 18px;
+}
+
 .error-msg {
   background: #FFF5F5;
   color: #E74C3C;

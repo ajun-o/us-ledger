@@ -1,0 +1,90 @@
+.bp-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 400;
+  animation: fadeIn 0.2s ease;
+}
+
+.bp-sheet {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 20px 20px 0 0;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  animation: slideUp 0.3s ease;
+}
+
+.bp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.bp-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3436;
+}
+
+.bp-close, .bp-save {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #636E72;
+  padding: 4px;
+  display: flex;
+}
+
+.bp-save {
+  color: #A8D5BA;
+}
+
+.bp-body {
+  padding: 20px;
+}
+
+.bp-section {
+  margin-bottom: 24px;
+}
+
+.bp-section h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2D3436;
+  margin: 0 0 4px;
+}
+
+.bp-desc {
+  font-size: 13px;
+  color: #B2BEC3;
+  margin: 0 0 12px;
+}
+
+.bp-options {
+  display: flex;
+  gap: 10px;
+}
+
+.bp-option {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 12px;
+  border: 2px solid #E8E8E8;
+  background: #FFFFFF;
+  font-size: 15px;
+  color: #636E72;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.bp-option.active {
+  border-color: #A8D5BA;
+  background: #A8D5BA15;
+  color: #2D3436;
+  font-weight: 600;
+}

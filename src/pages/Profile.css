@@ -503,6 +503,63 @@
 .cp-action-btn:active { background: #F5F5F5; transform: scale(0.98); }
 .cp-action-btn.danger { color: #E74C3C; }
 .cp-action-btn.invite { background: #A8D5BA; color: #2D3436; font-weight: 600; }
+.cp-action-btn.join { background: #C8B6E2; color: #2D3436; font-weight: 600; }
+
+.cp-action-btns {
+  display: flex;
+  gap: 10px;
+}
+.cp-action-btns .cp-action-btn { flex: 1; }
+
+/* 加入空间 */
+.cp-join-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.cp-join-input-row {
+  display: flex;
+  gap: 8px;
+}
+.cp-join-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #C8B6E2;
+  border-radius: 12px;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-align: center;
+  outline: none;
+  background: #FFFFFF;
+}
+.cp-join-input:focus { border-color: #A8D5BA; }
+.cp-join-confirm {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #A8D5BA;
+  color: #2D3436;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.cp-join-confirm:disabled { opacity: 0.6; }
+.cp-join-error {
+  color: #E74C3C;
+  font-size: 12px;
+  margin: 0;
+}
+.cp-join-cancel {
+  background: none;
+  border: none;
+  color: #B2BEC3;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+}
 
 /* 解除确认弹窗 */
 .cp-confirm-overlay {
@@ -686,5 +743,26 @@
   font-size: 14px;
   color: #B2BEC3;
   cursor: pointer;
+}
+
+/* ===== Toast ===== */
+.profile-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2D3436;
+  color: #FFFFFF;
+  font-size: 14px;
+  padding: 10px 24px;
+  border-radius: 20px;
+  z-index: 999;
+  animation: toastIn 0.3s ease;
+  white-space: nowrap;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
