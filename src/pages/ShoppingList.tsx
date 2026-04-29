@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Edit3, Trash2, ShoppingCart, Check } from 'lucide-react'
+import { X, Plus, ShoppingCart, Check } from 'lucide-react'
 import './ShoppingList.css'
 
 interface ShoppingItem {
@@ -72,7 +72,7 @@ export default function ShoppingList({ onClose }: Props) {
             <div className="sl-stats">
               <div className="sl-stat-card">
                 <div className="sl-stat-value">{items.length}</div>
-                <div className="sl-stat-label">共{item.length}项</div>
+                <div className="sl-stat-label">共{items.length}项</div>
               </div>
               <div className="sl-stat-card">
                 <div className="sl-stat-value">¥{totalEst.toFixed(0)}</div>

@@ -18,7 +18,7 @@ interface Props {
 
 const LEDGER_KEY = 'us_ledger_ledgers'
 const EMOJIS = ['🏠', '💕', '✈️', '🍜', '💼', '🎓', '💪', '🎯']
-const COLORS = ['#A8D5BA', '#F4A261', '#C8B6E2', '#74B9FF', '#FD79A8', '#F7DC6F']
+const _COLORS = ['#A8D5BA', '#F4A261', '#C8B6E2', '#74B9FF', '#FD79A8', '#F7DC6F']
 
 function loadLedgers(): Ledger[] {
   try {

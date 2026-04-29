@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X, ChevronDown, Download, Share2 } from 'lucide-react'
-import { type BillItem, fetchBills, fetchMonthStats } from '../lib/bills'
+import { type BillItem, fetchBills } from '../lib/bills'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from 'recharts'
 import './BillReport.css'
 

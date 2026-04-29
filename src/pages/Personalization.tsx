@@ -51,8 +51,6 @@ function applyFontSize(fs: FontSize) {
 export default function Personalization({ onClose }: Props) {
   const [theme, setTheme] = useState<ThemeName>(loadTheme)
   const [fontSize, setFontSize] = useState<FontSize>(loadFontSize)
-  const [saved, setSaved] = useState(false)
-
   const currentTheme = THEMES.find(t => t.name === theme)!
 
   const handleThemeChange = (t: ThemeConfig) => {

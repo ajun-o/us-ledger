@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Edit3, Trash2, Eye, EyeOff } from 'lucide-react'
+import { X, Plus, Edit3, Trash2 } from 'lucide-react'
 import './CategoryManager.css'
 
 interface Category {
@@ -60,7 +60,7 @@ function saveCategories(cats: Category[]) {
 export default function CategoryManager({ onClose }: Props) {
   const [categories, setCategories] = useState<Category[]>(loadCategories)
   const [activeTab, setActiveTab] = useState<CatType>('expense')
-  const [swipedId, setSwipedId] = useState<string | null>(null)
+  const [swipedId] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingCat, setEditingCat] = useState<Category | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)

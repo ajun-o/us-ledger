@@ -28,7 +28,6 @@ import {
   X,
   Edit3,
   Image,
-  Camera,
   Link2,
   Heart,
   AlertTriangle

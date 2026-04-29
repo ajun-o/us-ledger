@@ -97,12 +97,12 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   }, [selectedYear, selectedMonth])
 
   useEffect(() => {
-    let cancelled = false
+    let _cancelled = false
     const load = async () => {
       await loadData()
     }
     load()
-    return () => { cancelled = true }
+    return () => { _cancelled = true }
   }, [refreshKey, loadData])
 
   // 下拉刷新处理
@@ -459,7 +459,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
           </div>
 
           {/* 记一笔按钮 */}
-          <button className="add-record-btn" onClick={onAddRecord}>
+          <button className="add-record-btn" onClick={() => onAddRecord()}>
             <Plus size={20} />
             <span>记一笔</span>
           </button>
