@@ -475,6 +475,18 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
           </div>
         </div>
 
+        {/* 未绑定伴侣横幅 */}
+        {!hasPartnerBound && (
+          <div className="partner-banner" onClick={() => onTabChange('profile')}>
+            <div className="partner-banner-icon">💑</div>
+            <div className="partner-banner-text">
+              <span className="partner-banner-title">邀请伴侣，开启双人记账</span>
+              <span className="partner-banner-sub">和TA一起管理财务，记账更有趣</span>
+            </div>
+            <div className="partner-banner-arrow">›</div>
+          </div>
+        )}
+
         {/* 近3日账单 */}
         <div className="recent-bills">
           <div className="section-header">

@@ -23,7 +23,6 @@ import {
   Hand,
   X,
   Eye,
-  EyeOff,
   Edit3
 } from 'lucide-react'
 import {

@@ -333,6 +333,54 @@
   border-radius: 4px;
 }
 
+/* 未绑定伴侣横幅 */
+.partner-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #A8D5BA 0%, #C8B6E2 100%);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.3);
+}
+
+.partner-banner:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(168, 213, 186, 0.2);
+}
+
+.partner-banner-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.partner-banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.partner-banner-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2D3436;
+}
+
+.partner-banner-sub {
+  font-size: 12px;
+  color: rgba(45, 52, 54, 0.65);
+}
+
+.partner-banner-arrow {
+  font-size: 24px;
+  color: rgba(45, 52, 54, 0.5);
+  flex-shrink: 0;
+}
+
 /* 近3日账单 */
 .recent-bills {
   background: #FFFFFF;

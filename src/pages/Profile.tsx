@@ -122,7 +122,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
   }
 
   const handleInvite = () => {
-    const code = getInviteCode() || generateInviteCode()
+    getInviteCode() || generateInviteCode()
     setShowInviteSheet(true)
     setInviteCopied(false)
   }
