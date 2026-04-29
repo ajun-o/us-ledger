@@ -46,6 +46,7 @@ function App() {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(getInitialTheme)
   const [activeTab, setActiveTab] = useState<TabType>('home')
   const [showAddRecord, setShowAddRecord] = useState(false)
+  const [addRecordDefaultMember, setAddRecordDefaultMember] = useState<'mine' | 'partner' | 'joint' | undefined>(undefined)
   const [refreshKey, setRefreshKey] = useState(0)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; visible: boolean }>({ message: '', type: 'success', visible: false })
 
@@ -75,7 +76,8 @@ function App() {
     setActiveTab(tab)
   }
 
-  const handleOpenAddRecord = () => {
+  const handleOpenAddRecord = (defaultMember?: 'mine' | 'partner' | 'joint') => {
+    setAddRecordDefaultMember(defaultMember)
     setShowAddRecord(true)
   }
 
@@ -197,6 +199,7 @@ function App() {
           onClose={handleCloseAddRecord}
           onSave={handleSaveRecord}
           onError={handleSaveError}
+          defaultMember={addRecordDefaultMember}
         />
       )}
       {toast.visible && (

@@ -80,6 +80,7 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
   const [detailBill, setDetailBill] = useState<BillItem | null>(null)
   const [deletedBill, setDeletedBill] = useState<BillItem | null>(null)
   const undoRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const [showStatsDetail, setShowStatsDetail] = useState(false)
 
   // 搜索防抖 300ms
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -137,6 +138,18 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
   const totalExpense = filteredBills.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0)
   const totalIncome = filteredBills.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0)
   const totalBillCnt = filteredBills.length
+
+  // 月统计计算
+  const nowDate = new Date()
+  const currentYear = nowDate.getFullYear()
+  const currentMonth = nowDate.getMonth() + 1
+  const monthPrefix = `${currentYear}-${String(currentMonth).padStart(2, '0')}`
+  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate()
+  const monthBills = bills.filter(b => b.date.startsWith(monthPrefix))
+  const monthExpense = monthBills.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0)
+  const monthIncome = monthBills.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0)
+  const monthBalance = monthIncome - monthExpense
+  const dailyAvg = daysInMonth > 0 ? monthExpense / daysInMonth : 0
 
   // 筛选标签
   const activeFilters: { label: string; onRemove: () => void }[] = []
@@ -390,12 +403,64 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
       )}
 
       <main className="bills-main">
-        {/* 统计摘要 */}
-        <div className="filter-summary">
-          <span>共 {totalBillCnt} 笔</span>
-          <span className="summary-expense">支出 ¥{totalExpense.toFixed(2)}</span>
-          <span className="summary-income">收入 ¥{totalIncome.toFixed(2)}</span>
+        {/* 统计栏 */}
+        <div className="bills-stats-bar" onClick={() => setShowStatsDetail(true)}>
+          <div className="bills-stat-item">
+            <span className="bills-stat-label">月结余</span>
+            <span className={`bills-stat-value ${monthBalance >= 0 ? 'positive' : 'negative'}`}>
+              ¥{monthBalance.toFixed(2)}
+            </span>
+          </div>
+          <div className="bills-stat-divider"></div>
+          <div className="bills-stat-item">
+            <span className="bills-stat-label">日均支出</span>
+            <span className="bills-stat-value">¥{dailyAvg.toFixed(2)}</span>
+          </div>
+          <div className="bills-stat-divider"></div>
+          <div className="bills-stat-item">
+            <span className="bills-stat-label">共{totalBillCnt}笔</span>
+            <span className="bills-stat-value">{billType === 'all' ? '' : billType === 'expense' ? '支出' : '收入'} ¥{(billType === 'income' ? totalIncome : totalExpense).toFixed(2)}</span>
+          </div>
         </div>
+
+        {/* 计算说明浮层 */}
+        {showStatsDetail && (
+          <div className="bills-stats-overlay" onClick={() => setShowStatsDetail(false)}>
+            <div className="bills-stats-detail" onClick={e => e.stopPropagation()}>
+              <div className="sheet-handle"></div>
+              <h3>计算说明</h3>
+              <div className="stats-detail-row">
+                <span className="stats-detail-label">月结余</span>
+                <span className="stats-detail-formula">= 月收入 - 月支出</span>
+              </div>
+              <div className="stats-detail-row">
+                <span></span>
+                <span className="stats-detail-formula">= ¥{monthIncome.toFixed(2)} - ¥{monthExpense.toFixed(2)}</span>
+              </div>
+              <div className="stats-detail-row result">
+                <span></span>
+                <span className={`stats-detail-value ${monthBalance >= 0 ? 'positive' : 'negative'}`}>
+                  = ¥{monthBalance >= 0 ? '+' : ''}{monthBalance.toFixed(2)}
+                </span>
+              </div>
+              <div className="stats-detail-divider"></div>
+              <div className="stats-detail-row">
+                <span className="stats-detail-label">日均支出</span>
+                <span className="stats-detail-formula">= 月支出 ÷ 当月天数</span>
+              </div>
+              <div className="stats-detail-row">
+                <span></span>
+                <span className="stats-detail-formula">= ¥{monthExpense.toFixed(2)} ÷ {daysInMonth}天</span>
+              </div>
+              <div className="stats-detail-row result">
+                <span></span>
+                <span className="stats-detail-value">
+                  = ¥{dailyAvg.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 排序 */}
         <div className="sort-bar">

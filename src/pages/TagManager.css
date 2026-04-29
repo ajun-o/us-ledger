@@ -1,0 +1,44 @@
+.tm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#F8F9FA;z-index:500;animation:slideUp .3s ease;overflow-y:auto}
+.tm-page{min-height:100vh}
+.tm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));background:#FFF;border-bottom:1px solid #F0F0F0}
+.tm-header h2{font-size:18px;font-weight:600;color:#2D3436}
+.tm-back{width:40px;height:40px;border:none;background:none;color:#2D3436;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tm-add{width:40px;height:40px;border:none;background:#A8D5BA;color:#2D3436;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tm-body{padding:16px 20px}
+.tm-empty{text-align:center;padding:48px 0}
+.tm-empty p{font-size:15px;color:#B2BEC3;margin:0}
+.tm-empty-hint{font-size:13px!important;margin-top:6px!important}
+.tm-item{display:flex;align-items:center;gap:12px;padding:16px;background:#FFF;border-radius:14px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.03);cursor:pointer;transition:transform .15s ease}
+.tm-item:active{transform:scale(.98)}
+.tm-dot{flex-shrink:0}
+.tm-name{flex:1;font-size:15px;font-weight:500;color:#2D3436}
+.tm-actions{display:flex;gap:6px}
+.tm-edit,.tm-del{width:32px;height:32px;border-radius:8px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tm-edit{background:#A8D5BA30;color:#A8D5BA}
+.tm-del{background:#E74C3C20;color:#E74C3C}
+/* Tag bills sheet */
+.tm-bills-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;z-index:600;animation:fadeIn .2s ease}
+.tm-bills-sheet{width:100%;max-height:60vh;overflow-y:auto;background:#FFF;border-radius:24px 24px 0 0;padding:24px 20px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));animation:slideUp .3s ease}
+.tm-bills-sheet h3{font-size:16px;font-weight:600;color:#2D3436;text-align:center;margin:0 0 16px}
+.tm-bills-empty{text-align:center;padding:20px;font-size:14px;color:#B2BEC3}
+.tm-bills-list{display:flex;flex-direction:column;gap:8px}
+.tm-bill-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5F5F5}
+.tm-bill-name{flex:1;font-size:14px;color:#2D3436}
+.tm-bill-amount{font-size:14px;font-weight:600;font-family:'SF Mono',monospace}
+.tm-bill-amount.expense{color:#E74C3C}
+.tm-bill-amount.income{color:#27AE60}
+/* Modal */
+.tm-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:700;animation:fadeIn .2s ease}
+.tm-modal{width:300px;background:#FFF;border-radius:20px;padding:24px;animation:scaleIn .2s ease}
+.tm-modal h3{font-size:17px;font-weight:600;color:#2D3436;margin:0 0 16px;text-align:center}
+.tm-input{width:100%;padding:10px 14px;border:2px solid #E8E8E8;border-radius:12px;font-size:15px;outline:none;margin-bottom:16px}
+.tm-input:focus{border-color:#A8D5BA}
+.tm-color-label{font-size:13px;color:#636E72;margin-bottom:8px}
+.tm-colors{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.tm-color{width:36px;height:36px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.tm-color.active{border-color:#2D3436;transform:scale(1.15)}
+.tm-btns{display:flex;gap:10px;margin-top:16px}
+.tm-cancel{flex:1;padding:12px;border:1px solid #D1D5DB;border-radius:12px;background:#FFF;font-size:14px;color:#636E72;cursor:pointer}
+.tm-confirm{flex:1;padding:12px;border:none;border-radius:12px;background:#A8D5BA;font-size:14px;font-weight:600;color:#2D3436;cursor:pointer}
+.tm-confirm.danger{background:#E74C3C;color:#FFF}
+.tm-warn{font-size:13px;color:#636E72;text-align:center;margin:0 0 8px}

@@ -64,6 +64,59 @@
   flex: 1;
   padding: 0 16px;
   padding-bottom: 80px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== 下拉刷新指示器 ===== */
+.pull-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: height 0.2s ease, opacity 0.2s ease;
+  will-change: height;
+}
+
+.pull-indicator-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 60px;
+  color: #636E72;
+  font-size: 13px;
+}
+
+.pull-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pull-text.complete {
+  color: #27AE60;
+}
+
+.pull-text.error {
+  color: #E74C3C;
+}
+
+.pull-text.ready {
+  color: #A8D5BA;
+}
+
+.pull-text.hint {
+  color: #B2BEC3;
+}
+
+.pull-spinner {
+  animation: spin 0.8s linear infinite;
+  color: #A8D5BA;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 资产卡片 */
@@ -325,6 +378,11 @@
   flex-direction: column;
   align-items: center;
   padding: 32px 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.empty-state:active {
+  transform: scale(0.97);
 }
 
 .empty-illustration {
@@ -779,3 +837,4 @@
   background: rgba(168, 213, 186, 0.2);
   border-color: #A8D5BA;
 }
+

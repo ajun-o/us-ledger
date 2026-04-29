@@ -36,6 +36,9 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
   const [chartType, setChartType] = useState<ChartType>('pie')
   const [drillDown, setDrillDown] = useState<BillItem[] | null>(null)
   const [drillTitle, setDrillTitle] = useState('')
+  const [showStatsDetail, setShowStatsDetail] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const chartRef = useRef<HTMLDivElement>(null)
   const [selectedYear, setSelectedYear] = useState(now.getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1)
   const [showMonthPicker, setShowMonthPicker] = useState(false)
@@ -232,6 +235,80 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
     setDrillTitle(data.name)
   }
 
+  // 图表分享 — 生成图片
+  const handleShareChart = async () => {
+    setShowShareMenu(false)
+    const svgEl = chartRef.current?.querySelector('svg')
+    if (!svgEl) return
+
+    try {
+      // 克隆 SVG 避免污染原始DOM
+      const cloneSvg = svgEl.cloneNode(true) as SVGElement
+      // 设置白色背景
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+      rect.setAttribute('width', '100%')
+      rect.setAttribute('height', '100%')
+      rect.setAttribute('fill', '#FFFFFF')
+      cloneSvg.insertBefore(rect, cloneSvg.firstChild)
+
+      const svgData = new XMLSerializer().serializeToString(cloneSvg)
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(svgBlob)
+
+      const img = new Image()
+      img.onload = async () => {
+        const canvas = document.createElement('canvas')
+        const padding = 20
+        const headerHeight = 50
+        const w = img.width + padding * 2
+        const h = img.height + padding * 2 + headerHeight
+        canvas.width = w * 2 // 2x for retina
+        canvas.height = h * 2
+        const ctx = canvas.getContext('2d')!
+        ctx.scale(2, 2)
+
+        // 白色背景
+        ctx.fillStyle = '#FFFFFF'
+        ctx.fillRect(0, 0, w, h)
+
+        // Logo 和日期
+        ctx.fillStyle = '#2D3436'
+        ctx.font = 'bold 14px "PingFang SC", sans-serif'
+        ctx.fillText('US Ledger', padding, 28)
+        ctx.fillStyle = '#636E72'
+        ctx.font = '12px "PingFang SC", sans-serif'
+        const dateStr = `${selectedYear}年${selectedMonth}月 · ${statLabels[activeStat]}`
+        ctx.fillText(dateStr, padding, 44)
+
+        // 图表
+        ctx.drawImage(img, padding, headerHeight, img.width, img.height)
+
+        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'))
+        URL.revokeObjectURL(url)
+
+        if (!blob) return
+
+        // 尝试系统分享
+        if (navigator.share) {
+          const file = new File([blob], `us-ledger-${selectedYear}${selectedMonth}-${activeStat}.png`, { type: 'image/png' })
+          try {
+            await navigator.share({ title: '分享账单图表', files: [file] })
+            return
+          } catch { /* 用户取消分享，回退到下载 */ }
+        }
+
+        // 下载图片
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `us-ledger-${selectedYear}${selectedMonth}-${activeStat}.png`
+        a.click()
+      }
+      img.src = url
+    } catch (e) {
+      console.error('生成分享图片失败', e)
+    }
+  }
+
   const handleBarClick = (data: { name: string; expense: number; income: number }) => {
     if (!data?.name) return
     const memberMap: Record<string, string> = { '我': 'mine', 'TA': 'partner', '共同': 'joint' }
@@ -357,9 +434,48 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
                   {t === 'pie' ? '饼图' : t === 'area' ? '面积' : '柱状'}
                 </button>
               ))}
+              {bills.length > 0 && (
+                <button className="chart-share-btn" onClick={() => setShowShareMenu(true)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                </button>
+              )}
             </div>
 
-            <div className="chart-container">
+            {/* 分享菜单 */}
+            {showShareMenu && (
+              <>
+                <div className="share-menu-overlay" onClick={() => setShowShareMenu(false)}></div>
+                <div className="share-menu">
+                  <button onClick={handleShareChart}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span>保存图片</span>
+                  </button>
+                  <button onClick={handleShareChart}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    <span>分享</span>
+                  </button>
+                </div>
+              </>
+            )}
+
+            {bills.length === 0 ? (
+              <div className="chart-empty-state" onClick={onAddRecord}>
+                <div className="chart-empty-pie">
+                  <svg width="120" height="120" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#E8E8E8" strokeWidth="10" />
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#D1D5DB" strokeWidth="10"
+                      strokeDasharray="78 235" strokeDashoffset="0" strokeLinecap="round"
+                      transform="rotate(-90 60 60)" />
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#F0F0F0" strokeWidth="10"
+                      strokeDasharray="50 264" strokeDashoffset="-78" strokeLinecap="round"
+                      transform="rotate(-90 60 60)" />
+                  </svg>
+                </div>
+                <p className="chart-empty-text">没有发现账单哦，试着记一笔~</p>
+                <span className="chart-empty-hint">点击此处开始记账</span>
+              </div>
+            ) : (
+              <div ref={chartRef} className="chart-container">
               {chartType === 'pie' && (
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
@@ -410,6 +526,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
                 </ResponsiveContainer>
               )}
             </div>
+            )}
           </div>
         )}
 
@@ -441,17 +558,61 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
         )}
 
         {/* 月统计 */}
-        <div className="summary-bar">
+        <div className="summary-bar" onClick={() => setShowStatsDetail(true)}>
           <div className="summary-item">
-            <span className="summary-label">月支出：</span>
+            <span className="summary-label">月支出</span>
             <span className="summary-value expense">¥{monthStats.totalExpense.toFixed(2)}</span>
           </div>
           <div className="summary-divider"></div>
           <div className="summary-item">
-            <span className="summary-label">日均支出：</span>
+            <span className="summary-label">日均支出</span>
             <span className="summary-value">¥{dailyAvg}</span>
           </div>
         </div>
+
+        {/* 计算详情浮层 */}
+        {showStatsDetail && (
+          <div className="reports-stats-overlay" onClick={() => setShowStatsDetail(false)}>
+            <div className="reports-stats-detail" onClick={e => e.stopPropagation()}>
+              <div className="sheet-handle"></div>
+              <h3>计算说明</h3>
+              <div className="stats-detail-row">
+                <span className="stats-detail-label">月支出</span>
+                <span className="stats-detail-formula">= 本月所有支出之和</span>
+              </div>
+              <div className="stats-detail-row result">
+                <span></span>
+                <span className="stats-detail-value expense">= ¥{monthStats.totalExpense.toFixed(2)}</span>
+              </div>
+              <div className="stats-detail-divider"></div>
+              <div className="stats-detail-row">
+                <span className="stats-detail-label">日均支出</span>
+                <span className="stats-detail-formula">= 月支出 ÷ 当月天数</span>
+              </div>
+              <div className="stats-detail-row">
+                <span></span>
+                <span className="stats-detail-formula">= ¥{monthStats.totalExpense.toFixed(2)} ÷ {daysInMonth}天</span>
+              </div>
+              <div className="stats-detail-row result">
+                <span></span>
+                <span className="stats-detail-value">= ¥{dailyAvg}</span>
+              </div>
+              {activeStat !== 'expense' && (
+                <>
+                  <div className="stats-detail-divider"></div>
+                  <div className="stats-detail-row">
+                    <span className="stats-detail-label">当前筛选</span>
+                    <span className="stats-detail-formula">{statLabels[activeStat]}视图</span>
+                  </div>
+                  <div className="stats-detail-row">
+                    <span></span>
+                    <span className="stats-detail-formula">月{statLabels[activeStat]}：¥{statValues[activeStat]}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* 选中日期账单 */}
         {selectedDate !== null && (

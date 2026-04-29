@@ -35,8 +35,8 @@
 
 .island-tab.active {
   color: #2D3436;
-  background: #A8D5BA;
-  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+  background: var(--primary, #A8D5BA);
+  box-shadow: 0 2px 8px var(--primary-light, rgba(168, 213, 186, 0.4));
 }
 
 .island-tab:active {

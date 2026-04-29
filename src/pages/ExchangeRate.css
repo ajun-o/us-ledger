@@ -1,0 +1,44 @@
+.er-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#F8F9FA;z-index:500;animation:slideUp .3s ease;overflow-y:auto}
+.er-page{min-height:100vh}
+.er-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));background:#FFF;border-bottom:1px solid #F0F0F0}
+.er-header h2{font-size:18px;font-weight:600;color:#2D3436}
+.er-back{width:40px;height:40px;border:none;background:none;color:#2D3436;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.er-body{padding:20px}
+.er-card{background:#FFF;border-radius:16px;padding:20px;margin-bottom:12px}
+
+.er-amount-label{font-size:13px;color:#636E72;margin-bottom:8px}
+.er-amount-input{width:100%;padding:14px 16px;border:2px solid #E8E8E8;border-radius:14px;font-size:24px;font-weight:600;color:#2D3436;outline:none;text-align:center}
+.er-amount-input:focus{border-color:#98D8C8}
+
+.er-currency-row{display:flex;align-items:center;gap:12px;margin:20px 0}
+.er-currency-select{flex:1;position:relative}
+.er-currency-btn{width:100%;padding:14px 12px;border:2px solid #E8E8E8;border-radius:14px;background:#FFF;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:15px;color:#2D3436}
+.er-currency-btn:active{background:#F5F5F5}
+.er-currency-flag{font-size:28px}
+.er-currency-info{display:flex;flex-direction:column;align-items:flex-start}
+.er-currency-code{font-weight:600;font-size:15px}
+.er-currency-name{font-size:11px;color:#B2BEC3}
+.er-swap-btn{width:40px;height:40px;border-radius:50%;border:2px solid #E8E8E8;background:#FFF;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.er-swap-btn:active{background:#F5F5F5}
+
+.er-result{text-align:center;padding:16px;background:linear-gradient(135deg,#98D8C810,#4ECDC410);border-radius:14px}
+.er-result-amount{font-size:32px;font-weight:700;color:#2D3436}
+.er-result-rate{font-size:12px;color:#B2BEC3;margin-top:4px}
+
+.er-rate-info{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+.er-rate-text{font-size:13px;color:#636E72}
+.er-rate-update{font-size:12px;color:#B2BEC3}
+
+/* Currency picker sheet */
+.er-picker-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:650;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease}
+.er-picker{width:100%;max-width:400px;max-height:60vh;background:#FFF;border-radius:20px 20px 0 0;padding:16px 20px 24px;overflow-y:auto;animation:slideUp .3s ease}
+.er-picker h3{font-size:16px;font-weight:600;color:#2D3436;margin:0 0 12px;text-align:center}
+.er-picker-close{position:absolute;top:16px;right:20px;width:32px;height:32px;border:none;background:#F0F0F0;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.er-currency-option{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;cursor:pointer}
+.er-currency-option:active{background:#F5F5F5}
+.er-currency-option.selected{background:#98D8C820}
+.er-currency-option .flag{font-size:28px}
+.er-currency-option .info{flex:1;display:flex;flex-direction:column}
+.er-currency-option .code{font-size:15px;font-weight:500;color:#2D3436}
+.er-currency-option .name{font-size:12px;color:#B2BEC3}
+.er-currency-option .check{color:#98D8C8;font-weight:600}

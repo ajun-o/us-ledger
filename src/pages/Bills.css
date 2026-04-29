@@ -254,6 +254,122 @@
   color: #27AE60;
 }
 
+/* ===== 统计栏 ===== */
+.bills-stats-bar {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.bills-stats-bar:active {
+  transform: scale(0.98);
+}
+
+.bills-stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bills-stat-label {
+  font-size: 11px;
+  color: #B2BEC3;
+  font-weight: 500;
+}
+
+.bills-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2D3436;
+  font-family: 'SF Mono', 'DIN Alternate', monospace;
+}
+.bills-stat-value.positive { color: #27AE60; }
+.bills-stat-value.negative { color: #E74C3C; }
+
+.bills-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: #F0F0F0;
+}
+
+/* 计算说明浮层 */
+.bills-stats-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 300;
+  animation: fadeIn 0.2s ease;
+}
+
+.bills-stats-detail {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  animation: slideUp 0.3s ease;
+}
+
+.bills-stats-detail h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3436;
+  text-align: center;
+  margin: 0 0 20px 0;
+}
+
+.stats-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.stats-detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3436;
+  min-width: 72px;
+}
+
+.stats-detail-formula {
+  font-size: 13px;
+  color: #636E72;
+  font-family: 'SF Mono', monospace;
+}
+
+.stats-detail-row.result {
+  padding-top: 2px;
+  padding-bottom: 12px;
+}
+
+.stats-detail-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2D3436;
+  font-family: 'SF Mono', monospace;
+}
+.stats-detail-value.positive { color: #27AE60; }
+.stats-detail-value.negative { color: #E74C3C; }
+
+.stats-detail-divider {
+  height: 1px;
+  background: #F0F0F0;
+  margin: 12px 0;
+}
+
 /* ========== 排序栏 ========== */
 .sort-bar {
   position: relative;

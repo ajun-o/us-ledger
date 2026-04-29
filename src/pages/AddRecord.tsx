@@ -22,11 +22,12 @@ interface Props {
   onClose: () => void
   onSave: (message: string) => void
   onError: (message: string) => void
+  defaultMember?: MemberType
 }
 
-export default function AddRecord({ onClose, onSave, onError }: Props) {
+export default function AddRecord({ onClose, onSave, onError, defaultMember = 'joint' }: Props) {
   const [amount, setAmount] = useState('')
-  const [member, setMember] = useState<MemberType>('joint')
+  const [member, setMember] = useState<MemberType>(defaultMember)
   const [recordType, setRecordType] = useState<RecordType>('expense')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [showMore, setShowMore] = useState(false)

@@ -1,0 +1,46 @@
+.lm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#F8F9FA;z-index:500;animation:slideUp .3s ease;overflow-y:auto}
+.lm-page{min-height:100vh}
+.lm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));background:#FFF;border-bottom:1px solid #F0F0F0}
+.lm-header h2{font-size:18px;font-weight:600;color:#2D3436}
+.lm-back{width:40px;height:40px;border:none;background:none;color:#2D3436;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lm-add-btn{width:40px;height:40px;border:none;background:#A8D5BA;color:#2D3436;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.lm-body{padding:16px 20px}
+.lm-section{margin-top:20px}
+.lm-section h3{font-size:14px;color:#B2BEC3;margin:0 0 10px 0;font-weight:500}
+.lm-card{display:flex;align-items:center;justify-content:space-between;background:#FFF;border-radius:14px;padding:16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.03);cursor:pointer;transition:transform .15s ease}
+.lm-card:active{transform:scale(.98)}
+.lm-card.archived{opacity:.5}
+.lm-card-left{display:flex;align-items:center;gap:12px}
+.lm-card-icon{font-size:28px}
+.lm-card-info{display:flex;flex-direction:column;gap:2px}
+.lm-card-header{display:flex;align-items:center;gap:8px}
+.lm-card-name{font-size:16px;font-weight:600;color:#2D3436}
+.lm-default-badge{display:inline-flex;align-items:center;gap:2px;font-size:10px;background:#A8D5BA20;color:#A8D5BA;padding:2px 8px;border-radius:8px}
+.lm-card-meta{font-size:12px;color:#B2BEC3}
+/* Detail sheet */
+.lm-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;z-index:600;animation:fadeIn .2s ease}
+.lm-detail-sheet{width:100%;background:#FFF;border-radius:24px 24px 0 0;padding:24px 20px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));animation:slideUp .3s ease}
+.lm-detail-sheet h3{font-size:20px;font-weight:600;color:#2D3436;text-align:center;margin:0}
+.lm-detail-meta{font-size:13px;color:#B2BEC3;text-align:center;margin:8px 0 20px}
+.lm-detail-actions{display:flex;flex-direction:column;gap:8px}
+.lm-detail-btn{display:flex;align-items:center;gap:10px;width:100%;padding:14px 16px;border:none;border-radius:12px;background:#F5F5F5;font-size:15px;color:#2D3436;cursor:pointer;transition:background .15s ease}
+.lm-detail-btn:active{background:#E8E8E8}
+.lm-detail-btn.danger{color:#E74C3C}
+/* Forms */
+.lm-form-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:700;animation:fadeIn .2s ease}
+.lm-form{width:300px;background:#FFF;border-radius:20px;padding:24px;animation:scaleIn .2s ease}
+.lm-form h3{font-size:17px;font-weight:600;color:#2D3436;margin:0 0 16px;text-align:center}
+.lm-form-input{width:100%;padding:10px 14px;border:2px solid #E8E8E8;border-radius:12px;font-size:15px;outline:none;margin-bottom:16px}
+.lm-form-input:focus{border-color:#A8D5BA}
+.lm-form-label{font-size:13px;font-weight:500;color:#636E72;margin-bottom:8px}
+.lm-icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.lm-icon-btn{width:52px;height:52px;border:2px solid transparent;border-radius:14px;background:#F5F5F5;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lm-icon-btn.active{border-color:#A8D5BA;background:#FFF}
+.lm-member-chips{display:flex;gap:8px;margin-bottom:16px}
+.lm-chip{padding:8px 20px;border:2px solid #E8E8E8;border-radius:20px;background:#FFF;font-size:14px;cursor:pointer;transition:all .15s ease}
+.lm-chip.active{border-color:#A8D5BA;background:#A8D5BA20;font-weight:600}
+.lm-form-btns{display:flex;gap:10px;margin-top:16px}
+.lm-form-cancel{flex:1;padding:12px;border:1px solid #D1D5DB;border-radius:12px;background:#FFF;font-size:14px;color:#636E72;cursor:pointer}
+.lm-form-confirm{flex:1;padding:12px;border:none;border-radius:12px;background:#A8D5BA;font-size:14px;font-weight:600;color:#2D3436;cursor:pointer}
+.lm-form-confirm.danger{background:#E74C3C;color:#FFF}
+.lm-delete-warn{font-size:13px;color:#636E72;text-align:center;margin-bottom:8px}

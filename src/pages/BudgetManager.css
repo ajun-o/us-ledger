@@ -1,0 +1,189 @@
+/* ===== Budget Manager ===== */
+.bm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #F8F9FA;
+  z-index: 500;
+  animation: slideUp 0.3s ease;
+  overflow-y: auto;
+}
+
+.bm-page {
+  min-height: 100vh;
+}
+
+.bm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  background: #FFFFFF;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.bm-header h2 { font-size: 18px; font-weight: 600; color: #2D3436; }
+
+.bm-back {
+  width: 40px; height: 40px;
+  border: none; background: none; color: #2D3436;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.bm-save {
+  padding: 6px 16px;
+  border: none;
+  background: #A8D5BA;
+  color: #2D3436;
+  border-radius: 16px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+
+.bm-tabs {
+  display: flex;
+  padding: 12px 20px;
+  gap: 12px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.bm-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  background: #F5F5F5;
+  color: #636E72;
+  transition: all 0.2s ease;
+}
+.bm-tab.active { background: #A8D5BA; color: #2D3436; }
+
+.bm-body { padding: 20px; }
+
+.bm-section {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.bm-section h3 { font-size: 15px; font-weight: 600; color: #2D3436; margin: 0 0 12px 0; }
+
+.bm-amount-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 2px solid #A8D5BA;
+  padding-bottom: 4px;
+}
+
+.bm-currency { font-size: 24px; font-weight: 600; color: #2D3436; }
+
+.bm-amount-input input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2D3436;
+  outline: none;
+  font-family: 'SF Mono', monospace;
+}
+
+.bm-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #F5F5F5;
+}
+
+.bm-cat-name {
+  width: 56px;
+  font-size: 14px; font-weight: 500; color: #2D3436;
+}
+
+.bm-cat-amount {
+  flex: 1;
+  display: flex; align-items: center; gap: 4px;
+  border-bottom: 1px solid #E8E8E8;
+}
+.bm-cat-amount input {
+  flex: 1;
+  border: none; background: none;
+  font-size: 16px; font-weight: 500; color: #2D3436;
+  outline: none;
+}
+
+.bm-cat-remove {
+  width: 28px; height: 28px;
+  border: none; background: #F5F5F5;
+  border-radius: 50%;
+  font-size: 16px; color: #B2BEC3;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.bm-add-cat {
+  display: block; width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 2px dashed #D1D5DB;
+  border-radius: 10px;
+  background: none;
+  font-size: 14px; color: #A8D5BA; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.bm-add-cat:active { border-color: #A8D5BA; background: #A8D5BA10; }
+
+.bm-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #A8D5BA 0%, #F4A261 50%, #E74C3C 100%);
+  outline: none;
+  margin: 10px 0;
+}
+.bm-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 3px solid #A8D5BA;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.bm-hint {
+  font-size: 12px; color: #B2BEC3; margin: 4px 0 0 0;
+}
+
+.bm-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bm-toggle-info h3 { margin-bottom: 4px; }
+.bm-toggle-info p { font-size: 12px; color: #B2BEC3; margin: 0; }
+
+.bm-toggle {
+  width: 52px; height: 32px;
+  border: none;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.bm-toggle.on { background: #A8D5BA; color: #2D3436; }
+.bm-toggle.off { background: #D1D5DB; color: #636E72; }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Eye,
   EyeOff,
@@ -7,7 +7,9 @@ import {
   Plus,
   Wallet,
   Edit3,
-  Trash2
+  Trash2,
+  RotateCw,
+  WifiOff
 } from 'lucide-react'
 import BillDetail from './BillDetail'
 import MonthPicker from './MonthPicker'
@@ -22,7 +24,7 @@ interface Props {
   theme: string | null
   activeTab: TabType
   onTabChange: (tab: TabType) => void
-  onAddRecord: () => void
+  onAddRecord: (defaultMember?: 'mine' | 'partner' | 'joint') => void
   onGoAssets: () => void
   refreshKey?: number
   onDataChange?: () => void
@@ -50,48 +52,128 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   const [deletedBill, setDeletedBill] = useState<BillItem | null>(null)
   const undoRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
+  // 下拉刷新
+  type PullState = 'idle' | 'pulling' | 'refreshing' | 'complete' | 'error'
+  const [pullDistance, setPullDistance] = useState(0)
+  const [pullState, setPullState] = useState<PullState>('idle')
+  const pullStartY = useRef(0)
+  const lastRefreshTime = useRef(0)
+  const pullContainerRef = useRef<HTMLDivElement>(null)
+  const PULL_THRESHOLD = 60
+  const COOLDOWN_MS = 3000
+
   const [monthStats, setMonthStats] = useState({ totalExpense: 0, totalIncome: 0 })
   const [recentBills, setRecentBills] = useState<BillItem[]>([])
 
   // 加载数据
+  const loadData = useCallback(async () => {
+    try {
+      const m = String(selectedMonth).padStart(2, '0')
+      const lastDay = new Date(selectedYear, selectedMonth, 0).getDate()
+      const endDate = `${selectedYear}-${m}-${String(lastDay).padStart(2, '0')}`
+      const isCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth() + 1
+      let startDate: string
+      if (isCurrentMonth) {
+        const today = now.getDate()
+        const threeDaysAgo = new Date(now)
+        threeDaysAgo.setDate(today - 3)
+        startDate = `${threeDaysAgo.getFullYear()}-${String(threeDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(threeDaysAgo.getDate()).padStart(2, '0')}`
+      } else {
+        startDate = `${selectedYear}-${m}-${String(Math.max(1, lastDay - 3)).padStart(2, '0')}`
+      }
+
+      const [stats, bills] = await Promise.all([
+        fetchMonthStats(selectedYear, selectedMonth),
+        fetchBills({ startDate, endDate, limit: 50 })
+      ])
+
+      setMonthStats({ totalExpense: stats.totalExpense, totalIncome: stats.totalIncome })
+      setRecentBills(bills)
+      return true
+    } catch (e) {
+      console.error('加载首页数据失败', e)
+      return false
+    }
+  }, [selectedYear, selectedMonth])
+
   useEffect(() => {
     let cancelled = false
-
     const load = async () => {
-      try {
-        const m = String(selectedMonth).padStart(2, '0')
-        // 选中的月份的最后一天
-        const lastDay = new Date(selectedYear, selectedMonth, 0).getDate()
-        const endDate = `${selectedYear}-${m}-${String(lastDay).padStart(2, '0')}`
-        // 近3日：如果是当前月则最近3天，否则取月末3天
-        const isCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth() + 1
-        let startDate: string
-        if (isCurrentMonth) {
-          const today = now.getDate()
-          const threeDaysAgo = new Date(now)
-          threeDaysAgo.setDate(today - 3)
-          startDate = `${threeDaysAgo.getFullYear()}-${String(threeDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(threeDaysAgo.getDate()).padStart(2, '0')}`
-        } else {
-          startDate = `${selectedYear}-${m}-${String(Math.max(1, lastDay - 3)).padStart(2, '0')}`
-        }
-
-        const [stats, bills] = await Promise.all([
-          fetchMonthStats(selectedYear, selectedMonth),
-          fetchBills({ startDate, endDate, limit: 50 })
-        ])
-
-        if (!cancelled) {
-          setMonthStats({ totalExpense: stats.totalExpense, totalIncome: stats.totalIncome })
-          setRecentBills(bills)
-        }
-      } catch (e) {
-        console.error('加载首页数据失败', e)
-      }
+      await loadData()
     }
-
     load()
     return () => { cancelled = true }
-  }, [refreshKey, selectedYear, selectedMonth])
+  }, [refreshKey, loadData])
+
+  // 下拉刷新处理
+  const handlePullStart = useCallback((e: React.TouchEvent) => {
+    // 只在页面顶部且空闲状态时响应
+    if (pullState !== 'idle') return
+    const el = pullContainerRef.current
+    if (el && el.scrollTop > 0) return
+    pullStartY.current = e.touches[0].clientY
+  }, [pullState])
+
+  const handlePullMove = useCallback((e: React.TouchEvent) => {
+    if (pullState !== 'idle') return
+    const el = pullContainerRef.current
+    if (el && el.scrollTop > 0) return
+    const diff = e.touches[0].clientY - pullStartY.current
+    if (diff > 0) {
+      // 阻尼效果：越拉越慢
+      const damped = Math.min(diff * 0.5, 120)
+      setPullDistance(damped)
+      setPullState(diff > 0 ? 'pulling' : 'idle')
+    }
+  }, [pullState])
+
+  const handlePullEnd = useCallback(async () => {
+    if (pullState !== 'pulling') {
+      setPullDistance(0)
+      return
+    }
+
+    // 3秒冷却检查
+    const now = Date.now()
+    if (now - lastRefreshTime.current < COOLDOWN_MS) {
+      setPullDistance(0)
+      setPullState('idle')
+      return
+    }
+
+    if (pullDistance >= PULL_THRESHOLD) {
+      // 检查网络
+      if (!navigator.onLine) {
+        setPullState('error')
+        setTimeout(() => {
+          setPullDistance(0)
+          setPullState('idle')
+        }, 2000)
+        return
+      }
+
+      setPullState('refreshing')
+      lastRefreshTime.current = now
+
+      const ok = await loadData()
+      if (ok) {
+        setPullState('complete')
+        setTimeout(() => {
+          setPullDistance(0)
+          setPullState('idle')
+        }, 1500)
+      } else {
+        setPullState('error')
+        setTimeout(() => {
+          setPullDistance(0)
+          setPullState('idle')
+        }, 2000)
+      }
+    } else {
+      setPullDistance(0)
+      setPullState('idle')
+    }
+  }, [pullState, pullDistance, loadData])
 
   // 按日期分组
   const groupedBills: Record<string, BillItem[]> = {}
@@ -270,7 +352,46 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
         </button>
       </header>
 
-      <main className="home-main">
+      <main
+        className="home-main"
+        ref={pullContainerRef}
+        onTouchStart={handlePullStart}
+        onTouchMove={handlePullMove}
+        onTouchEnd={handlePullEnd}
+      >
+        {/* 下拉刷新指示器 */}
+        <div
+          className={`pull-indicator ${pullState}`}
+          style={{
+            height: pullState === 'idle' ? `${pullDistance}px` : (pullState === 'refreshing' || pullState === 'complete' || pullState === 'error' ? '60px' : `${pullDistance}px`),
+            opacity: pullDistance > 0 || pullState !== 'idle' ? 1 : 0
+          }}
+        >
+          <div className="pull-indicator-inner">
+            {pullState === 'refreshing' && (
+              <>
+                <RotateCw size={18} className="pull-spinner" />
+                <span className="pull-text">正在刷新...</span>
+              </>
+            )}
+            {pullState === 'complete' && (
+              <span className="pull-text complete">✓ 已更新</span>
+            )}
+            {pullState === 'error' && (
+              <>
+                <WifiOff size={18} />
+                <span className="pull-text error">无网络，请检查连接</span>
+              </>
+            )}
+            {pullState === 'pulling' && pullDistance >= PULL_THRESHOLD && (
+              <span className="pull-text ready">松开立即刷新</span>
+            )}
+            {pullState === 'pulling' && pullDistance < PULL_THRESHOLD && pullDistance > 0 && (
+              <span className="pull-text hint">继续下拉刷新</span>
+            )}
+          </div>
+        </div>
+
         {/* 资产卡片 */}
         <div
           className="asset-card"
@@ -365,7 +486,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
           </div>
 
           {recentBills.length === 0 ? (
-            <div className="empty-state">
+            <div className="empty-state" onClick={() => onAddRecord(viewMode)}>
               <div className="empty-illustration">
                 <div className="empty-book">
                   <div className="book-cover"></div>
