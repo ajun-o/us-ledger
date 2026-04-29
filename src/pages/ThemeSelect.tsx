@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Lock } from 'lucide-react'
+import { hasPartner } from '../lib/couple'
 import './ThemeSelect.css'
 
 type ThemeOption = 'minimal' | 'couple'
@@ -15,7 +16,7 @@ const ONBOARDING_KEY = 'us_ledger_has_skipped_onboarding'
 export default function ThemeSelect({ onConfirm, onSkip }: Props) {
   const [selected, setSelected] = useState<ThemeOption>('minimal')
   const [showSkipModal, setShowSkipModal] = useState(false)
-  const [hasPartner] = useState(false) // TODO: 从 Supabase 检查伴侣绑定状态
+  const isPartnerBound = hasPartner()
 
   const handleSkip = () => {
     setShowSkipModal(true)
@@ -37,7 +38,7 @@ export default function ThemeSelect({ onConfirm, onSkip }: Props) {
   }
 
   const handleCoupleClick = () => {
-    if (!hasPartner) {
+    if (!isPartnerBound) {
       return // 点击无效果，锁图标提示
     }
     setSelected('couple')
@@ -91,12 +92,12 @@ export default function ThemeSelect({ onConfirm, onSkip }: Props) {
 
         {/* 情侣模式 */}
         <div
-          className={`theme-card ${!hasPartner ? 'locked' : ''} ${selected === 'couple' ? 'selected' : ''}`}
+          className={`theme-card ${!isPartnerBound ? 'locked' : ''} ${selected === 'couple' ? 'selected' : ''}`}
           onClick={handleCoupleClick}
-          title={!hasPartner ? '绑定伴侣后解锁' : ''}
+          title={!isPartnerBound ? '绑定伴侣后解锁' : ''}
         >
           <div className="card-preview couple-preview">
-            {!hasPartner && (
+            {!isPartnerBound && (
               <div className="lock-overlay">
                 <Lock size={24} />
                 <span>绑定伴侣后解锁</span>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { validateInviteCode, saveCoupleProfile, getCoupleProfile } from '../lib/couple'
+import { simulatePhoneLogin, saveLoginResult } from '../lib/auth'
 import './Auth.css'
 
 interface Props {
@@ -110,6 +112,13 @@ export default function PhoneRegister({ onBack, onSuccess, goToLogin }: Props) {
 
     // 开发模式：跳过 Supabase，直接完成注册
     if (devMode) {
+      const result = simulatePhoneLogin(phone)
+      saveLoginResult(result)
+      if (inviteCode && validateInviteCode(inviteCode)) {
+        const profile = getCoupleProfile()
+        profile.bindDate = new Date().toISOString().split('T')[0]
+        saveCoupleProfile(profile)
+      }
       onSuccess()
       return
     }
@@ -128,13 +137,20 @@ export default function PhoneRegister({ onBack, onSuccess, goToLogin }: Props) {
       return
     }
 
-    // 存储邀请码作为用户元数据
+    // 存储邀请码作为用户元数据，同时更新本地伴侣关系
     if (inviteCode) {
       await supabase.auth.updateUser({
         data: { invite_code: inviteCode }
       })
+      if (validateInviteCode(inviteCode)) {
+        const profile = getCoupleProfile()
+        profile.bindDate = new Date().toISOString().split('T')[0]
+        saveCoupleProfile(profile)
+      }
     }
 
+    const result = simulatePhoneLogin(phone)
+    saveLoginResult(result)
     setLoading(false)
     onSuccess()
   }

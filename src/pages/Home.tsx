@@ -15,6 +15,7 @@ import BillDetail from './BillDetail'
 import MonthPicker from './MonthPicker'
 import DynamicIsland from '../components/DynamicIsland'
 import { type BillItem, fetchBills, updateBill, deleteBill, fetchMonthStats } from '../lib/bills'
+import { getCoupleProfile } from '../lib/couple'
 import './Home.css'
 
 type ViewMode = 'mine' | 'partner' | 'joint'
@@ -42,7 +43,8 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     return localStorage.getItem(EYE_KEY) !== 'false'
   })
   const [showViewSheet, setShowViewSheet] = useState(false)
-  const [hasPartner] = useState(false)
+  const coupleProfile = getCoupleProfile()
+  const hasPartnerBound = !!coupleProfile.partnerName
   const [animatingAmount, setAnimatingAmount] = useState(false)
 
   const [swipedId, setSwipedId] = useState<string | null>(null)
@@ -282,7 +284,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   }
   const viewSubtitles: Record<ViewMode, string> = {
     mine: '只看我记的账单',
-    partner: hasPartner ? '查看TA的账单' : '未绑定伴侣',
+    partner: hasPartnerBound ? '查看TA的账单' : '未绑定伴侣',
     joint: '两人共同的账单'
   }
 
@@ -296,14 +298,16 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     if (direction === 'left' && currentIndex > 0) newIndex = currentIndex - 1
     else if (direction === 'right' && currentIndex < viewModes.length - 1) newIndex = currentIndex + 1
     if (newIndex === currentIndex) return
+    const target = viewModes[newIndex]
+    if (target === 'partner' && !hasPartnerBound) return
 
     setAnimatingAmount(true)
-    setViewMode(viewModes[newIndex])
+    setViewMode(target)
     setTimeout(() => setAnimatingAmount(false), 300)
   }
 
   const handleSelectView = (mode: ViewMode) => {
-    if (mode === 'partner' && !hasPartner) return
+    if (mode === 'partner' && !hasPartnerBound) return
     setAnimatingAmount(true)
     setViewMode(mode)
     setShowViewSheet(false)
@@ -321,13 +325,14 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
     if (diff > 0 && currentIdx < viewModes.length - 1) {
       // 左滑 → 下一个
       const next = viewModes[currentIdx + 1]
-      if (next === 'partner' && !hasPartner) return
+      if (next === 'partner' && !hasPartnerBound) return
       setAnimatingAmount(true)
       setViewMode(next)
       setTimeout(() => setAnimatingAmount(false), 300)
     } else if (diff < 0 && currentIdx > 0) {
       // 右滑 → 上一个
       const prev = viewModes[currentIdx - 1]
+      if (prev === 'partner' && !hasPartnerBound) return
       setAnimatingAmount(true)
       setViewMode(prev)
       setTimeout(() => setAnimatingAmount(false), 300)
@@ -591,9 +596,9 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
             {viewModes.map(mode => (
               <button
                 key={mode}
-                className={`view-sheet-item ${viewMode === mode ? 'active' : ''} ${mode === 'partner' && !hasPartner ? 'disabled' : ''}`}
+                className={`view-sheet-item ${viewMode === mode ? 'active' : ''} ${mode === 'partner' && !hasPartnerBound ? 'disabled' : ''}`}
                 onClick={() => handleSelectView(mode)}
-                disabled={mode === 'partner' && !hasPartner}
+                disabled={mode === 'partner' && !hasPartnerBound}
               >
                 <div className="view-sheet-left">
                   <span className="view-sheet-icon">{viewIcons[mode]}</span>
@@ -605,7 +610,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
                 {mode === viewMode && (
                   <span className="view-sheet-check">✓</span>
                 )}
-                {mode === 'partner' && !hasPartner && (
+                {mode === 'partner' && !hasPartnerBound && (
                   <span className="view-sheet-lock">🔒</span>
                 )}
               </button>
@@ -614,12 +619,12 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
             <div className="view-sheet-couple">
               <div className="couple-row">
                 <div className="couple-ava me">我</div>
-                <span className="couple-name">阿俊</span>
-                {hasPartner ? (
+                <span className="couple-name">{coupleProfile.myName}</span>
+                {hasPartnerBound ? (
                   <>
                     <span className="couple-heart">♥</span>
                     <div className="couple-ava partner">TA</div>
-                    <span className="couple-name">小美</span>
+                    <span className="couple-name">{coupleProfile.partnerName}</span>
                   </>
                 ) : (
                   <>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { simulatePhoneLogin, saveLoginResult } from '../lib/auth'
 import './Auth.css'
 
 interface Props {
@@ -69,6 +70,8 @@ export default function PhoneLogin({ onBack, onSuccess, goToRegister }: Props) {
 
     // 开发模式：任意6位验证码直接通过
     if (devMode) {
+      const result = simulatePhoneLogin(phone)
+      saveLoginResult(result)
       onSuccess()
       return
     }
@@ -89,6 +92,8 @@ export default function PhoneLogin({ onBack, onSuccess, goToRegister }: Props) {
       return
     }
 
+    const result = simulatePhoneLogin(phone)
+    saveLoginResult(result)
     onSuccess()
   }
 

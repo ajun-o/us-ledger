@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { type BillItem, createBill } from '../lib/bills'
 import { type Account, fetchAccounts, getAccountBalance } from '../lib/accounts'
+import { hasPartner, getPartnerName } from '../lib/couple'
 import './AddRecord.css'
 
 type MemberType = 'mine' | 'partner' | 'joint'
@@ -56,7 +57,8 @@ export default function AddRecord({ onClose, onSave, onError, defaultMember = 'j
   const [billDate, setBillDate] = useState(todayStr)
   const [billTime, setBillTime] = useState(nowStr)
 
-  const partnerName = '小美'
+  const partnerName = getPartnerName()
+  const partnerBound = hasPartner()
 
   const dateLabel = billDate === todayStr ? '今天' : billDate
 
@@ -189,10 +191,15 @@ export default function AddRecord({ onClose, onSave, onError, defaultMember = 'j
             {(Object.keys(memberLabels) as MemberType[]).map((key) => (
               <button
                 key={key}
-                className={`member-btn ${member === key ? 'active' : ''}`}
-                onClick={() => setMember(key)}
+                className={`member-btn ${member === key ? 'active' : ''} ${key === 'partner' && !partnerBound ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (key === 'partner' && !partnerBound) return
+                  setMember(key)
+                }}
+                disabled={key === 'partner' && !partnerBound}
               >
                 {memberLabels[key]}
+                {key === 'partner' && !partnerBound ? ' 🔒' : ''}
               </button>
             ))}
           </div>

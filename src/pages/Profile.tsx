@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ScanLine,
   Settings,
@@ -30,7 +30,9 @@ import {
   Image,
   Link2,
   Heart,
-  AlertTriangle
+  AlertTriangle,
+  Copy,
+  Check
 } from 'lucide-react'
 import DynamicIsland from '../components/DynamicIsland'
 import CategoryManager from './CategoryManager'
@@ -44,6 +46,14 @@ import ShoppingList from './ShoppingList'
 import ExchangeRate from './ExchangeRate'
 import Toolbox from './Toolbox'
 import Personalization from './Personalization'
+import {
+  getCoupleProfile,
+  saveCoupleProfile,
+  getAccountingDays,
+  generateInviteCode,
+  getInviteCode,
+  hasPartner
+} from '../lib/couple'
 import './Profile.css'
 
 type TabType = 'home' | 'bills' | 'reports' | 'profile'
@@ -52,20 +62,6 @@ interface Props {
   activeTab: TabType
   onTabChange: (tab: TabType) => void
   onOpenSettings: () => void
-}
-
-const COUPLE_PROFILE_KEY = 'us_ledger_couple_profile'
-
-function getProfile(): { myName: string; partnerName: string; bindDate: string } {
-  try {
-    const raw = localStorage.getItem(COUPLE_PROFILE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return { myName: '阿俊', partnerName: '小美', bindDate: '2026-04-28' }
-}
-
-function saveProfile(data: { myName: string; partnerName: string; bindDate: string }) {
-  localStorage.setItem(COUPLE_PROFILE_KEY, JSON.stringify(data))
 }
 
 export default function Profile({ activeTab, onTabChange, onOpenSettings }: Props) {
@@ -81,14 +77,24 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
   const [showExchangeRate, setShowExchangeRate] = useState(false)
   const [showToolbox, setShowToolbox] = useState(false)
   const [showPersonalization, setShowPersonalization] = useState(false)
-  const [profile, setProfile] = useState(getProfile)
+  const [profile, setProfile] = useState(getCoupleProfile)
   const [editingField, setEditingField] = useState<'myName' | 'partnerName' | null>(null)
   const [editValue, setEditValue] = useState('')
   const [showUnbindConfirm, setShowUnbindConfirm] = useState(false)
   const [unbindStep, setUnbindStep] = useState(0) // 0=初始, 1=二次确认
+  const [showInviteSheet, setShowInviteSheet] = useState(false)
+  const [inviteCopied, setInviteCopied] = useState(false)
 
-  const bindDate = new Date(profile.bindDate)
-  const accountingDays = Math.max(1, Math.floor((Date.now() - bindDate.getTime()) / (1000 * 60 * 60 * 24)))
+  const accountingDays = getAccountingDays()
+  const partnerBound = hasPartner()
+
+  useEffect(() => {
+    const flag = localStorage.getItem('us_ledger_open_couple')
+    if (flag === 'true') {
+      localStorage.removeItem('us_ledger_open_couple')
+      setShowCouplePage(true)
+    }
+  }, [])
 
   const handleEdit = (field: 'myName' | 'partnerName') => {
     setEditingField(field)
@@ -99,7 +105,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
     if (!editValue.trim()) return
     const updated = { ...profile, [editingField!]: editValue.trim() }
     setProfile(updated)
-    saveProfile(updated)
+    saveCoupleProfile(updated)
     setEditingField(null)
   }
 
@@ -109,9 +115,40 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
     } else {
       const updated = { ...profile, partnerName: '', bindDate: '' }
       setProfile(updated)
-      saveProfile(updated)
+      saveCoupleProfile(updated)
       setShowUnbindConfirm(false)
       setUnbindStep(0)
+    }
+  }
+
+  const handleInvite = () => {
+    const code = getInviteCode() || generateInviteCode()
+    setShowInviteSheet(true)
+    setInviteCopied(false)
+  }
+
+  const handleCopyCode = async () => {
+    const code = getInviteCode() || ''
+    try {
+      await navigator.clipboard.writeText(code)
+      setInviteCopied(true)
+      setTimeout(() => setInviteCopied(false), 2000)
+    } catch {
+      // 回退方案
+      setInviteCopied(true)
+      setTimeout(() => setInviteCopied(false), 2000)
+    }
+  }
+
+  const handleShareCode = async () => {
+    const code = getInviteCode() || ''
+    const shareText = `快来和我一起记账吧！在 US Ledger 注册时输入我的邀请码：${code}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'US Ledger 情侣记账', text: shareText })
+      } catch { /* 用户取消 */ }
+    } else {
+      handleCopyCode()
     }
   }
 
@@ -172,10 +209,10 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
             </div>
             <div className="user-details">
               <div className="user-name">
-                <span>Hi 阿俊 & 小美</span>
+                <span>Hi {profile.myName}{partnerBound ? ` & ${profile.partnerName}` : ''}</span>
                 <span className="vip-badge">VIP</span>
               </div>
-              <p className="user-days">今天是你们记账的第1天啦😎</p>
+              <p className="user-days">今天是你们记账的第{accountingDays}天啦😎</p>
             </div>
           </div>
           <ChevronRight size={20} className="arrow" />
@@ -183,7 +220,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
 
         {/* 情侣专属功能 */}
         <div className="couple-section">
-          <div className="couple-card">
+          <div className="couple-card" onClick={() => setShowCouplePage(true)}>
             <div className="couple-icon">💕</div>
             <div className="couple-info">
               <span className="couple-title">情侣专属</span>
@@ -340,7 +377,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
         <div className="couple-profile-overlay">
           <div className="couple-profile-page">
             <header className="cp-header">
-              <button className="cp-back" onClick={() => { setShowCouplePage(false); setEditingField(null); setShowUnbindConfirm(false); setUnbindStep(0) }}>
+              <button className="cp-back" onClick={() => { setShowCouplePage(false); setEditingField(null); setShowUnbindConfirm(false); setUnbindStep(0); setShowInviteSheet(false) }}>
                 <X size={24} />
               </button>
               <h2>我们的资料</h2>
@@ -414,9 +451,9 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
 
               {/* 操作区 */}
               <div className="cp-actions">
-                {profile.partnerName ? (
+                {partnerBound ? (
                   <>
-                    <button className="cp-action-btn" onClick={() => { /* 重新邀请 */ }}>
+                    <button className="cp-action-btn" onClick={handleInvite}>
                       <Link2 size={18} />
                       <span>重新邀请伴侣</span>
                     </button>
@@ -426,7 +463,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
                     </button>
                   </>
                 ) : (
-                  <button className="cp-action-btn invite">
+                  <button className="cp-action-btn invite" onClick={handleInvite}>
                     <Link2 size={18} />
                     <span>邀请伴侣</span>
                   </button>
@@ -452,6 +489,31 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings }: Prop
                     {unbindStep === 0 ? '确认解除' : '最终确认'}
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* 邀请伴侣弹窗 */}
+          {showInviteSheet && (
+            <div className="cp-invite-overlay" onClick={() => setShowInviteSheet(false)}>
+              <div className="cp-invite-sheet" onClick={e => e.stopPropagation()}>
+                <div className="sheet-handle"></div>
+                <h3>邀请伴侣一起记账</h3>
+                <p className="invite-desc">让对方在注册时输入此邀请码，即可自动建立伴侣关系</p>
+                <div className="invite-code-display">
+                  <span className="invite-code">{getInviteCode()}</span>
+                </div>
+                <div className="invite-btns">
+                  <button className="invite-btn copy" onClick={handleCopyCode}>
+                    {inviteCopied ? <Check size={18} /> : <Copy size={18} />}
+                    <span>{inviteCopied ? '已复制' : '复制邀请码'}</span>
+                  </button>
+                  <button className="invite-btn share" onClick={handleShareCode}>
+                    <Share2 size={18} />
+                    <span>分享给伴侣</span>
+                  </button>
+                </div>
+                <button className="invite-close" onClick={() => setShowInviteSheet(false)}>关闭</button>
               </div>
             </div>
           )}

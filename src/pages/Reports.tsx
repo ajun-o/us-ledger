@@ -367,9 +367,11 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
         </div>
 
         {/* 统计金额卡片 */}
-        <div className="stat-amount-card">
-          <span className="stat-currency">¥</span>
-          <span className="stat-value">{statValues[activeStat]}</span>
+        <div className="stat-amount-wrapper">
+          <div className="stat-amount-card">
+            <span className="stat-currency">¥</span>
+            <span className="stat-value">{statValues[activeStat]}</span>
+          </div>
         </div>
 
         {viewMode === 'calendar' ? (

@@ -578,3 +578,113 @@
 /* user card hover */
 .user-card { cursor: pointer; }
 
+/* ===== 邀请伴侣弹窗 ===== */
+.cp-invite-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 600;
+  animation: fadeIn 0.2s ease;
+}
+
+.cp-invite-sheet {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  animation: sheetSlideUp 0.3s ease;
+  text-align: center;
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.cp-invite-sheet .sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #D1D5DB;
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.cp-invite-sheet h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2D3436;
+  margin: 0 0 8px 0;
+}
+
+.invite-desc {
+  font-size: 13px;
+  color: #636E72;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.invite-code-display {
+  background: #F8F9FA;
+  border: 2px dashed #A8D5BA;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.invite-code {
+  font-size: 28px;
+  font-weight: 800;
+  color: #2D3436;
+  font-family: 'SF Mono', 'DIN Alternate', monospace;
+  letter-spacing: 4px;
+}
+
+.invite-btns {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.invite-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.invite-btn:active { transform: scale(0.97); }
+
+.invite-btn.copy {
+  background: #F5F5F5;
+  color: #2D3436;
+}
+
+.invite-btn.share {
+  background: #A8D5BA;
+  color: #2D3436;
+}
+
+.invite-close {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: #B2BEC3;
+  cursor: pointer;
+}
+

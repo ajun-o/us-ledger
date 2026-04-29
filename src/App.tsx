@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import Welcome from './pages/Welcome'
+import Splash from './pages/Splash'
+import LoginPage from './pages/LoginPage'
 import ThemeSelect from './pages/ThemeSelect'
 import Home from './pages/Home'
 import Bills from './pages/Bills'
@@ -10,24 +11,13 @@ import Settings from './pages/Settings'
 import Assets from './pages/Assets'
 import PhoneLogin from './pages/PhoneLogin'
 import PhoneRegister from './pages/PhoneRegister'
+import { isTokenValid, clearAuthData, setOnboardingComplete, hasCompletedOnboarding } from './lib/auth'
 import './App.css'
 
-type Page = 'welcome' | 'phone-login' | 'phone-register' | 'theme' | 'main' | 'settings' | 'assets'
+type Page = 'splash' | 'welcome' | 'phone-login' | 'phone-register' | 'theme' | 'main' | 'settings' | 'assets'
 type TabType = 'home' | 'bills' | 'reports' | 'profile'
 
-const AUTH_KEY = 'us_ledger_auth'
 const THEME_KEY = 'us_ledger_theme'
-
-function getInitialPage(): Page {
-  try {
-    const saved = localStorage.getItem(AUTH_KEY)
-    if (saved) {
-      const parsed = JSON.parse(saved)
-      if (parsed.loggedIn) return 'main'
-    }
-  } catch { /* ignore */ }
-  return 'welcome'
-}
 
 function getInitialTheme(): string | null {
   try {
@@ -37,12 +27,8 @@ function getInitialTheme(): string | null {
   }
 }
 
-function persistLogin() {
-  localStorage.setItem(AUTH_KEY, JSON.stringify({ loggedIn: true }))
-}
-
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>(getInitialPage)
+  const [currentPage, setCurrentPage] = useState<Page>('splash')
   const [selectedTheme, setSelectedTheme] = useState<string | null>(getInitialTheme)
   const [activeTab, setActiveTab] = useState<TabType>('home')
   const [showAddRecord, setShowAddRecord] = useState(false)
@@ -57,18 +43,28 @@ function App() {
     setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 2000)
   }
 
-  const handleLogin = () => {
-    persistLogin()
-    setCurrentPage('theme')
+  // ===== Splash 回调 =====
+  const handleSplashGoMain = () => setCurrentPage('main')
+  const handleSplashGoLogin = () => setCurrentPage('welcome')
+
+  // ===== 登录成功后：先检查是否需要引导页 =====
+  const handleAfterLogin = () => {
+    if (!hasCompletedOnboarding()) {
+      setCurrentPage('theme')
+    } else {
+      setCurrentPage('main')
+    }
   }
 
   const handleThemeConfirm = (theme: string) => {
     localStorage.setItem(THEME_KEY, theme)
     setSelectedTheme(theme)
+    setOnboardingComplete()
     setCurrentPage('main')
   }
 
   const handleThemeSkip = () => {
+    setOnboardingComplete()
     setCurrentPage('main')
   }
 
@@ -100,7 +96,7 @@ function App() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem(AUTH_KEY)
+    clearAuthData()
     localStorage.removeItem(THEME_KEY)
     setSelectedTheme(null)
     setCurrentPage('welcome')
@@ -110,21 +106,36 @@ function App() {
     setCurrentPage('main')
   }
 
+  const handleOpenCoupleFromSettings = () => {
+    setCurrentPage('main')
+    setActiveTab('profile')
+    // 延迟一下让 Profile 组件挂载后再打开情侣页
+    setTimeout(() => {
+      // 通过 storage event 或直接操作来通知 Profile 打开情侣页
+      localStorage.setItem('us_ledger_open_couple', 'true')
+    }, 100)
+  }
+
   const handlePhoneLoginSuccess = () => {
-    persistLogin()
-    setCurrentPage('theme')
+    handleAfterLogin()
   }
 
   const handleRegisterSuccess = () => {
-    persistLogin()
-    setCurrentPage('theme')
+    handleAfterLogin()
   }
 
   return (
     <div className="app">
+      {currentPage === 'splash' && (
+        <Splash
+          onGoMain={handleSplashGoMain}
+          onGoLogin={handleSplashGoLogin}
+        />
+      )}
       {currentPage === 'welcome' && (
-        <Welcome
-          onLogin={handleLogin}
+        <LoginPage
+          onClose={isTokenValid() ? () => setCurrentPage('main') : undefined}
+          onSuccess={handleAfterLogin}
           onPhoneLogin={() => setCurrentPage('phone-login')}
           onPhoneRegister={() => setCurrentPage('phone-register')}
         />
@@ -188,7 +199,7 @@ function App() {
         </>
       )}
       {currentPage === 'settings' && (
-        <Settings onBack={handleBackFromSettings} onLogout={handleLogout} />
+        <Settings onBack={handleBackFromSettings} onLogout={handleLogout} onOpenCouplePage={handleOpenCoupleFromSettings} />
       )}
       {currentPage === 'assets' && (
         <Assets onBack={() => setCurrentPage('main')} />
