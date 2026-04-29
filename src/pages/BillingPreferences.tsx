@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Check } from 'lucide-react'
 import './BillingPreferences.css'
 

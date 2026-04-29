@@ -25,8 +25,8 @@ export default function MonthPicker({ year, month, onConfirm, onClose }: Props) 
 
   const yearRef = useRef<HTMLDivElement>(null)
   const monthRef = useRef<HTMLDivElement>(null)
-  const yearTimer = useRef<ReturnType<typeof setTimeout>>()
-  const monthTimer = useRef<ReturnType<typeof setTimeout>>()
+  const yearTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const monthTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // 初始化滚动位置
   useEffect(() => {

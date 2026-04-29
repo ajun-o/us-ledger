@@ -64,7 +64,6 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   const PULL_THRESHOLD = 60
   const COOLDOWN_MS = 3000
 
-  const [monthStats, setMonthStats] = useState({ totalExpense: 0, totalIncome: 0 })
   const [recentBills, setRecentBills] = useState<BillItem[]>([])
 
   // 加载数据
@@ -84,14 +83,13 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
         startDate = `${selectedYear}-${m}-${String(Math.max(1, lastDay - 3)).padStart(2, '0')}`
       }
 
-      const [stats, bills] = await Promise.all([
+      const [, bills] = await Promise.all([
         fetchMonthStats(selectedYear, selectedMonth),
         fetchBills({ startDate, endDate, limit: 50 })
       ])
 
       const transformedBills = await transformBillsPerspective(bills)
 
-      setMonthStats({ totalExpense: stats.totalExpense, totalIncome: stats.totalIncome })
       setRecentBills(transformedBills)
       return true
     } catch (e) {

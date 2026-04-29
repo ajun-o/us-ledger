@@ -130,7 +130,7 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, on
   const handleManualSync = async () => {
     showToast('正在同步...')
     try {
-      const { syncQueue, getQueueSize } = await import('../lib/bills')
+      const { syncQueue } = await import('../lib/bills')
       const remaining = await syncQueue()
       if (remaining === 0) showToast('同步完成')
       else showToast(`同步完成，${remaining} 条待同步`)
