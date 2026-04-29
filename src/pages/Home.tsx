@@ -97,12 +97,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   }, [selectedYear, selectedMonth])
 
   useEffect(() => {
-    let _cancelled = false
-    const load = async () => {
-      await loadData()
-    }
-    load()
-    return () => { _cancelled = true }
+    loadData()
   }, [refreshKey, loadData])
 
   // 下拉刷新处理

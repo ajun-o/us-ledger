@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Edit3, Trash2 } from 'lucide-react'
+import { X, Plus, Edit3, Trash2, EyeOff } from 'lucide-react'
 import './CategoryManager.css'
 
 interface Category {
