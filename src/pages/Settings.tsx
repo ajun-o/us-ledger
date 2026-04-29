@@ -23,15 +23,27 @@ import {
   Hand,
   X,
   Eye,
-  Edit3
+  Edit3,
+  Zap,
+  HelpCircle,
+  Headphones,
+  Globe,
+  Share2
 } from 'lucide-react'
 import {
   getPartnerPermission,
   savePartnerPermission,
   getDataVisibility,
-  saveDataVisibility,
-  hasPartner
+  saveDataVisibility
 } from '../lib/couple'
+import {
+  QuickCommandsContent,
+  HelpCenterContent,
+  CustomerServiceContent,
+  OfficialMediaContent,
+  ShareAppContent,
+  AboutAppContent
+} from './SettingsSubPages'
 import './Settings.css'
 
 interface Props {
@@ -45,7 +57,7 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
   const [showVisDialog, setShowVisDialog] = useState(false)
   const [permission, setPermission] = useState(getPartnerPermission)
   const [visibility, setVisibility] = useState(getDataVisibility)
-  const partnerBound = hasPartner()
+  const [subPage, setSubPage] = useState<string | null>(null)
 
   const handleSavePermission = () => {
     savePartnerPermission(permission)
@@ -57,17 +69,21 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
     setShowVisDialog(false)
   }
 
-  const handleCoupleItem = (label: string) => {
-    if (!partnerBound && label !== '伴侣绑定管理') {
-      alert('请先绑定伴侣')
-      return
-    }
-    if (label === '伴侣绑定管理') {
-      onOpenCouplePage?.()
-    } else if (label === '对方权限设置') {
-      setShowPermDialog(true)
-    } else if (label === '共同数据可见性') {
-      setShowVisDialog(true)
+  const handleItemClick = (item: typeof sections[0]['items'][0]) => {
+    const ext = item as Record<string, unknown>
+    if (ext.action) {
+      const action = ext.action as string
+      switch (action) {
+        case 'couple': onOpenCouplePage?.(); break
+        case 'perm': setShowPermDialog(true); break
+        case 'vis': setShowVisDialog(true); break
+        case 'quick': setSubPage('quick-commands'); break
+        case 'share': setSubPage('share'); break
+        case 'help': setSubPage('help'); break
+        case 'service': setSubPage('customer-service'); break
+        case 'media': setSubPage('official-media'); break
+        case 'about': setSubPage('about'); break
+      }
     }
   }
 
@@ -122,11 +138,34 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
       ]
     },
     {
+      title: '工具',
+      items: [
+        { icon: Zap, label: '快捷指令', description: 'Siri/桌面小组件', color: '#F4A261', action: 'quick' as const },
+      ]
+    },
+    {
+      title: '社交',
+      items: [
+        { icon: Share2, label: '分享给朋友', description: '邀请好友一起记账', color: '#E74C3C', action: 'share' as const },
+      ]
+    },
+    {
+      title: '支持',
+      items: [
+        { icon: HelpCircle, label: '帮助中心', description: '常见问题与新手指引', color: '#0984E3', action: 'help' as const },
+        { icon: Headphones, label: '联系客服', description: '9:00-21:00', color: '#27AE60', action: 'service' as const },
+        { icon: Globe, label: '官方媒体', description: '公众号/微博/抖音', color: '#6C5CE7', action: 'media' as const },
+      ]
+    },
+    {
       title: '关于',
       items: [
-        { icon: Info, label: '版本信息', description: 'v1.0.0', color: '#636E72' },
-        { icon: Shield, label: '隐私政策', color: '#636E72' },
-        { icon: FileText, label: '用户协议', color: '#636E72' },
+        { icon: Info, label: '关于 Us Ledger', description: 'v1.2.0 (build 234)', color: '#636E72', action: 'about' as const },
+      ]
+    },
+    {
+      title: '账户操作',
+      items: [
         { icon: UserX, label: '注销账号', danger: true, color: '#E74C3C' }
       ]
     }
@@ -156,7 +195,7 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
                   <div
                     key={itemIndex}
                     className={`settings-item ${ext.danger ? 'danger' : ''}`}
-                    onClick={() => ext.action && handleCoupleItem(item.label)}
+                    onClick={() => handleItemClick(item)}
                   >
                     <div className="item-left">
                       <div className="item-icon" style={{ background: item.color + '15' }}>
@@ -164,7 +203,7 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
                       </div>
                       <div className="item-text">
                         <span className="item-label">{item.label}</span>
-                        {item.description && (
+                        {'description' in item && typeof item.description === 'string' && (
                           <span className="item-description">{item.description}</span>
                         )}
                       </div>
@@ -232,6 +271,14 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
           </div>
         </div>
       )}
+
+      {/* 子页面 */}
+      {subPage === 'quick-commands' && <QuickCommandsContent onBack={() => setSubPage(null)} />}
+      {subPage === 'help' && <HelpCenterContent onBack={() => setSubPage(null)} />}
+      {subPage === 'customer-service' && <CustomerServiceContent onBack={() => setSubPage(null)} />}
+      {subPage === 'official-media' && <OfficialMediaContent onBack={() => setSubPage(null)} />}
+      {subPage === 'share' && <ShareAppContent onBack={() => setSubPage(null)} />}
+      {subPage === 'about' && <AboutAppContent onBack={() => setSubPage(null)} />}
 
       {/* 共同数据可见性弹窗 */}
       {showVisDialog && (
