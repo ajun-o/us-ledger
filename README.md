@@ -57,8 +57,9 @@ React 19 + TypeScript + Vite 8 + Supabase Auth/DB + recharts + Lucide Icons
 - 统计栏（月结余 + 日均支出）
 
 ### 报表页（Reports）
-- 日历视图（日期点击展开/收起 + 左右滑动切月 + 今日高亮）
+- 日历视图（日期点击展开/收起 + 左右滑动切月 + 今日高亮 + 选中绿色圆形标记）
 - 三种图表：饼图（分类占比）/ 面积图（每日趋势）/ 柱状图（成员对比）
+- 筛选抽屉（按成员/类型过滤，日历图表联动）
 - 图表下钻 + 二级分类明细
 - 图表分享（保存图片/系统分享）
 
@@ -161,7 +162,8 @@ supabase/
     ├── 001_create_bills.sql          # bills 表 + RLS 策略
     ├── 002_create_couples.sql        # couples/invite_codes 表 + 伴侣 RLS
     ├── 003_fix_book_id_nullable.sql   # 修复 book_id NOT NULL 约束
-    └── 004_drop_bills_user_id_fkey.sql # 删除冗余外键约束
+    ├── 004_drop_bills_user_id_fkey.sql # 删除冗余外键约束
+    └── 005_consolidated_partner_visibility.sql # 合并迁移（幂等）
 ```
 
 ## 状态

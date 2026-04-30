@@ -50,6 +50,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   const [swipedId, setSwipedId] = useState<string | null>(null)
   const touchStartX = useRef(0)
   const cardTouchStartX = useRef(0)
+  const cardTouchStartY = useRef(0)
   const [detailBill, setDetailBill] = useState<BillItem | null>(null)
   const [deletedBill, setDeletedBill] = useState<BillItem | null>(null)
   const undoRef = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -332,20 +333,23 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
 
   const handleCardTouchStart = (e: React.TouchEvent) => {
     cardTouchStartX.current = e.touches[0].clientX
+    cardTouchStartY.current = e.touches[0].clientY
   }
 
   const handleCardTouchEnd = (e: React.TouchEvent) => {
-    const diff = cardTouchStartX.current - e.changedTouches[0].clientX
-    if (Math.abs(diff) < 50) return
+    const diffX = cardTouchStartX.current - e.changedTouches[0].clientX
+    const diffY = cardTouchStartY.current - e.changedTouches[0].clientY
+    // 水平滑动必须大于垂直滑动且超过阈值才切换视角
+    if (Math.abs(diffX) < 50 || Math.abs(diffX) < Math.abs(diffY)) return
     const currentIdx = viewModes.indexOf(viewMode)
-    if (diff > 0 && currentIdx < viewModes.length - 1) {
+    if (diffX > 0 && currentIdx < viewModes.length - 1) {
       // 左滑 → 下一个
       const next = viewModes[currentIdx + 1]
       if (next === 'partner' && !hasPartnerBound) return
       setAnimatingAmount(true)
       setViewMode(next)
       setTimeout(() => setAnimatingAmount(false), 300)
-    } else if (diff < 0 && currentIdx > 0) {
+    } else if (diffX < 0 && currentIdx > 0) {
       // 右滑 → 上一个
       const prev = viewModes[currentIdx - 1]
       if (prev === 'partner' && !hasPartnerBound) return

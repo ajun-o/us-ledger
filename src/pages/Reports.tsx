@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import {
-  Heart,
   ChevronDown,
   Filter,
   Plus,
@@ -39,12 +38,21 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
   const [showStatsDetail, setShowStatsDetail] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
+
+  // 筛选状态
+  const [showFilter, setShowFilter] = useState(false)
+  const [memberFilter, setMemberFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [draftMember, setDraftMember] = useState<string>('all')
+  const [draftType, setDraftType] = useState<string>('all')
+
   const [selectedYear, setSelectedYear] = useState(now.getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1)
   const [showMonthPicker, setShowMonthPicker] = useState(false)
   const [selectedDate, setSelectedDate] = useState<number | null>(now.getDate())
   const [activeStat, setActiveStat] = useState<StatType>('expense')
   const calendarTouchStartX = useRef(0)
+  const calendarTouchStartY = useRef(0)
 
   const [bills, setBills] = useState<BillItem[]>([])
   const [monthStats, setMonthStats] = useState({ totalExpense: 0, totalIncome: 0, count: 0 })
@@ -87,9 +95,16 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
     net: (monthStats.totalIncome - monthStats.totalExpense).toFixed(2)
   }
 
+  // 按筛选条件过滤账单
+  const filteredBills = bills.filter(b => {
+    if (memberFilter !== 'all' && b.member !== memberFilter) return false
+    if (typeFilter !== 'all' && b.type !== typeFilter) return false
+    return true
+  })
+
   // 找出本月有账单的日期
   const billDates = new Map<number, { mine: boolean; partner: boolean; joint: boolean; hasExpense: boolean; hasIncome: boolean }>()
-  bills.forEach(b => {
+  filteredBills.forEach(b => {
     const d = parseInt(b.date.split('-')[2], 10)
     if (isNaN(d)) return
     if (!billDates.has(d)) billDates.set(d, { mine: false, partner: false, joint: false, hasExpense: false, hasIncome: false })
@@ -103,7 +118,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
 
   // 选中日期的账单
   const selectedDateBills = selectedDate !== null
-    ? bills.filter(b => {
+    ? filteredBills.filter(b => {
         const d = parseInt(b.date.split('-')[2], 10)
         return d === selectedDate
       })
@@ -152,11 +167,14 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
   // 日历左右滑动切月
   const handleCalendarTouchStart = (e: React.TouchEvent) => {
     calendarTouchStartX.current = e.touches[0].clientX
+    calendarTouchStartY.current = e.touches[0].clientY
   }
   const handleCalendarTouchEnd = (e: React.TouchEvent) => {
-    const diff = calendarTouchStartX.current - e.changedTouches[0].clientX
-    if (Math.abs(diff) < 50) return
-    if (diff > 0) {
+    const diffX = calendarTouchStartX.current - e.changedTouches[0].clientX
+    const diffY = calendarTouchStartY.current - e.changedTouches[0].clientY
+    // 水平滑动必须大于垂直滑动且超过阈值才切月
+    if (Math.abs(diffX) < 50 || Math.abs(diffX) < Math.abs(diffY)) return
+    if (diffX > 0) {
       // 左滑 → 下个月
       if (selectedMonth === 12) {
         if (selectedYear < now.getFullYear()) { setSelectedYear(selectedYear + 1); setSelectedMonth(1) }
@@ -181,11 +199,11 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
 
   const currentMonthStr = `${selectedYear}年${selectedMonth}月`
 
-  // 图表数据
+  // 图表数据（基于筛选后的账单）
   // 饼图：支出分类聚合
   const pieData = (() => {
     const map = new Map<string, number>()
-    bills.filter(b => b.type === 'expense').forEach(b => {
+    filteredBills.filter(b => b.type === 'expense').forEach(b => {
       map.set(b.categoryName, (map.get(b.categoryName) || 0) + b.amount)
     })
     return Array.from(map.entries()).map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
@@ -197,7 +215,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
     for (let i = 1; i <= daysInMonth; i++) {
       map.set(i, { day: `${i}日`, expense: 0, income: 0 })
     }
-    bills.forEach(b => {
+    filteredBills.forEach(b => {
       const d = parseInt(b.date.split('-')[2], 10)
       const entry = map.get(d)
       if (entry) {
@@ -215,7 +233,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
       { name: 'TA', expense: 0, income: 0 },
       { name: '共同', expense: 0, income: 0 }
     ]
-    bills.forEach(b => {
+    filteredBills.forEach(b => {
       const m = members.find(x => (b.member === 'mine' ? x.name === '我' : b.member === 'partner' ? x.name === 'TA' : x.name === '共同'))
       if (m) {
         if (b.type === 'expense') m.expense = Math.round((m.expense + b.amount) * 100) / 100
@@ -337,9 +355,6 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
             日历
           </button>
         </div>
-        <button className="favorite-btn">
-          <Heart size={20} />
-        </button>
       </header>
 
       <main className="reports-main">
@@ -348,9 +363,13 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
             <span>{currentMonthStr}</span>
             <ChevronDown size={16} />
           </button>
-          <button className="filter-btn">
+          <button className="filter-btn" onClick={() => {
+            setDraftMember(memberFilter)
+            setDraftType(typeFilter)
+            setShowFilter(true)
+          }}>
             <Filter size={16} />
-            <span>筛选</span>
+            <span>筛选{memberFilter !== 'all' || typeFilter !== 'all' ? '·' : ''}</span>
           </button>
         </div>
 
@@ -436,7 +455,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
                   {t === 'pie' ? '饼图' : t === 'area' ? '面积' : '柱状'}
                 </button>
               ))}
-              {bills.length > 0 && (
+              {filteredBills.length > 0 && (
                 <button className="chart-share-btn" onClick={() => setShowShareMenu(true)}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                 </button>
@@ -460,7 +479,7 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
               </>
             )}
 
-            {bills.length === 0 ? (
+            {filteredBills.length === 0 ? (
               <div className="chart-empty-state" onClick={onAddRecord}>
                 <div className="chart-empty-pie">
                   <svg width="120" height="120" viewBox="0 0 120 120">
@@ -665,6 +684,64 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
           onConfirm={handleMonthConfirm}
           onClose={() => setShowMonthPicker(false)}
         />
+      )}
+
+      {/* 筛选抽屉 */}
+      {showFilter && (
+        <div className="reports-filter-overlay" onClick={() => setShowFilter(false)}>
+          <div className="reports-filter-drawer" onClick={e => e.stopPropagation()}>
+            <div className="filter-drawer-header">
+              <h3>筛选条件</h3>
+              <button className="filter-drawer-reset" onClick={() => {
+                setDraftMember('all')
+                setDraftType('all')
+                setMemberFilter('all')
+                setTypeFilter('all')
+                setShowFilter(false)
+              }}>重置</button>
+            </div>
+
+            <div className="filter-drawer-body">
+              <div className="filter-section">
+                <h4>成员</h4>
+                <div className="filter-options">
+                  {[{ id: 'all', label: '全部' }, { id: 'mine', label: '我的' }, { id: 'partner', label: 'TA的' }, { id: 'joint', label: '共同' }].map(tab => (
+                    <button
+                      key={tab.id}
+                      className={`filter-chip ${draftMember === tab.id ? 'active' : ''}`}
+                      onClick={() => setDraftMember(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filter-section">
+                <h4>类型</h4>
+                <div className="filter-options">
+                  {[{ id: 'all', label: '全部' }, { id: 'expense', label: '支出' }, { id: 'income', label: '收入' }].map(t => (
+                    <button
+                      key={t.id}
+                      className={`filter-chip ${draftType === t.id ? 'active' : ''}`}
+                      onClick={() => setDraftType(t.id)}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="filter-drawer-footer">
+              <button className="filter-apply-btn" onClick={() => {
+                setMemberFilter(draftMember)
+                setTypeFilter(draftType)
+                setShowFilter(false)
+              }}>确定</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
