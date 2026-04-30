@@ -73,7 +73,7 @@
 }
 
 .step.active {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .step-line.active {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
 }
 
 /* 表单 */
@@ -123,7 +123,7 @@
 
 .input-wrapper:focus-within {
   background: #FFFFFF;
-  box-shadow: 0 0 0 2px #A8D5BA;
+  box-shadow: 0 0 0 2px var(--primary, #A8D5BA);
 }
 
 .prefix {
@@ -154,7 +154,7 @@
 
 .send-code-btn {
   padding: 8px 16px;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -221,9 +221,9 @@
 }
 
 .auth-btn.primary {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
-  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.4);
 }
 
 .auth-btn.primary:disabled {
@@ -246,7 +246,7 @@
 .link-btn {
   background: none;
   border: none;
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

@@ -23,7 +23,7 @@
 
 .login-page.dark .alt-login-btn.phone {
   background: #2D3436;
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
 }
 
 /* 顶部 */
@@ -107,7 +107,7 @@
 .illustration-card {
   width: 200px;
   height: 180px;
-  background: linear-gradient(160deg, rgba(168,213,186,0.15) 0%, rgba(244,162,97,0.1) 100%);
+  background: linear-gradient(160deg, rgba(var(--primary-rgb),0.15) 0%, rgba(244,162,97,0.1) 100%);
   border-radius: 24px;
   position: relative;
   display: flex;
@@ -125,7 +125,7 @@
 .circle-1 {
   width: 60px;
   height: 60px;
-  background: rgba(168,213,186,0.25);
+  background: rgba(var(--primary-rgb),0.25);
   top: 16px;
   left: -20px;
 }
@@ -173,7 +173,7 @@
 
 .chart-bar {
   width: 14px;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   border-radius: 4px 4px 0 0;
   opacity: 0.7;
 }
@@ -184,7 +184,7 @@
 .illustration-label {
   margin-top: 10px;
   font-size: 12px;
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
   font-weight: 500;
   z-index: 1;
 }
@@ -202,7 +202,7 @@
   height: 52px;
   border-radius: 26px;
   border: none;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   font-size: 17px;
   font-weight: 600;
@@ -212,7 +212,7 @@
   gap: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(168, 213, 186, 0.3);
+  box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.3);
 }
 
 .wechat-btn:active:not(:disabled) {
@@ -305,8 +305,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(168, 213, 186, 0.2);
-  color: #A8D5BA;
+  background: rgba(var(--primary-rgb), 0.2);
+  color: var(--primary, #A8D5BA);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -336,8 +336,8 @@
 }
 
 .privacy-checkbox.checked {
-  background: #A8D5BA;
-  border-color: #A8D5BA;
+  background: var(--primary, #A8D5BA);
+  border-color: var(--primary, #A8D5BA);
 }
 
 .privacy-text {
@@ -379,7 +379,7 @@
 .register-link {
   background: none;
   border: none;
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

@@ -5,8 +5,8 @@
   --bg: #FFFFFF;
   --text-primary: #2D3436;
   --text-secondary: #636E72;
-  --mint: #A8D5BA;
-  --mint-dark: #8BC4A4;
+  --mint: var(--primary, #A8D5BA);
+  --mint-dark: var(--primary-dark, #8BC4A4);
   --orange: #F4A261;
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
@@ -156,7 +156,7 @@
   width: 64px;
   height: 80px;
   border-radius: 8px 16px 16px 8px;
-  background: linear-gradient(135deg, #C8B6E2, #A8D5BA);
+  background: linear-gradient(135deg, #C8B6E2, var(--primary, #A8D5BA));
   box-shadow: var(--card-shadow);
 }
 
@@ -224,7 +224,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.4);
 }
 
 .btn-wechat:active:not(:disabled) {

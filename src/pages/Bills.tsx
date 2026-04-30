@@ -529,7 +529,7 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
                     >
                       {batchMode && (
                         <button className="select-check" onClick={(e) => { e.stopPropagation(); toggleSelect(bill.id) }}>
-                          {selectedIds.has(bill.id) ? <CheckSquare size={20} color="#A8D5BA" /> : <Square size={20} color="#B2BEC3" />}
+                          {selectedIds.has(bill.id) ? <CheckSquare size={20} color="var(--primary, #A8D5BA)" /> : <Square size={20} color="#B2BEC3" />}
                         </button>
                       )}
                       <span className="bill-cat">{bill.categoryIcon}</span>

@@ -37,7 +37,7 @@
 .bm-save {
   padding: 6px 16px;
   border: none;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   border-radius: 16px;
   font-size: 14px; font-weight: 600;
@@ -63,7 +63,7 @@
   color: #636E72;
   transition: all 0.2s ease;
 }
-.bm-tab.active { background: #A8D5BA; color: #2D3436; }
+.bm-tab.active { background: var(--primary, #A8D5BA); color: #2D3436; }
 
 .bm-body { padding: 20px; }
 
@@ -81,7 +81,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  border-bottom: 2px solid #A8D5BA;
+  border-bottom: 2px solid var(--primary, #A8D5BA);
   padding-bottom: 4px;
 }
 
@@ -139,18 +139,18 @@
   border: 2px dashed #D1D5DB;
   border-radius: 10px;
   background: none;
-  font-size: 14px; color: #A8D5BA; font-weight: 500;
+  font-size: 14px; color: var(--primary, #A8D5BA); font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
-.bm-add-cat:active { border-color: #A8D5BA; background: #A8D5BA10; }
+.bm-add-cat:active { border-color: var(--primary, #A8D5BA); background: var(--primary, #A8D5BA)10; }
 
 .bm-slider {
   width: 100%;
   -webkit-appearance: none;
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(to right, #A8D5BA 0%, #F4A261 50%, #E74C3C 100%);
+  background: linear-gradient(to right, var(--primary, #A8D5BA) 0%, #F4A261 50%, #E74C3C 100%);
   outline: none;
   margin: 10px 0;
 }
@@ -159,7 +159,7 @@
   width: 24px; height: 24px;
   border-radius: 50%;
   background: #FFFFFF;
-  border: 3px solid #A8D5BA;
+  border: 3px solid var(--primary, #A8D5BA);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   cursor: pointer;
 }
@@ -185,5 +185,5 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-.bm-toggle.on { background: #A8D5BA; color: #2D3436; }
+.bm-toggle.on { background: var(--primary, #A8D5BA); color: #2D3436; }
 .bm-toggle.off { background: #D1D5DB; color: #636E72; }

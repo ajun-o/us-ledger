@@ -11,6 +11,10 @@ body {
 }
 
 :root {
+  --primary: #A8D5BA;
+  --primary-rgb: 168, 213, 186;
+  --primary-light: rgba(168, 213, 186, 0.3);
+  --primary-dark: #8BC4A4;
   --mint: #A8D5BA;
   --orange: #F4A261;
   --purple: #C8B6E2;
@@ -30,6 +34,71 @@ body {
   background: #F8F9FA;
   color: #636E72;
   font-size: 16px;
+}
+
+/* ===== 暗色模式 ===== */
+[data-theme="dark"] {
+  --bg-light: #1a1a2e;
+  --text-dark: #e0e0e0;
+  --text-mid: #a0a0a0;
+  --text-light: #6a6a7a;
+  color-scheme: dark;
+}
+
+[data-theme="dark"] body {
+  background: #1a1a2e;
+}
+
+[data-theme="dark"] .home-page,
+[data-theme="dark"] .bills-page,
+[data-theme="dark"] .reports-page,
+[data-theme="dark"] .profile-page,
+[data-theme="dark"] .settings-page,
+[data-theme="dark"] .assets-page,
+[data-theme="dark"] .auth-page,
+[data-theme="dark"] .splash-page {
+  background: #1a1a2e;
+}
+
+[data-theme="dark"] .page-bg,
+[data-theme="dark"] .bills-bg,
+[data-theme="dark"] .reports-bg {
+  background: linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 100%);
+}
+
+[data-theme="dark"] .asset-card,
+[data-theme="dark"] .recent-bills,
+[data-theme="dark"] .calendar-card,
+[data-theme="dark"] .chart-container,
+[data-theme="dark"] .chart-empty-state,
+[data-theme="dark"] .day-bills,
+[data-theme="dark"] .summary-bar,
+[data-theme="dark"] .bills-stats-bar,
+[data-theme="dark"] .user-card,
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .function-section,
+[data-theme="dark"] .other-section,
+[data-theme="dark"] .section-list,
+[data-theme="dark"] .subpage-card,
+[data-theme="dark"] .info-card,
+[data-theme="dark"] .settings-item,
+[data-theme="dark"] .bill-item,
+[data-theme="dark"] .account-item,
+[data-theme="dark"] .faq-item,
+[data-theme="dark"] .guide-card,
+[data-theme="dark"] .social-item {
+  background: #2a2a3e;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .bill-item {
+  background: #2a2a3e;
+}
+
+[data-theme="dark"] .section-list,
+[data-theme="dark"] .other-section,
+[data-theme="dark"] .settings-section .section-list {
+  background: #2a2a3e;
 }
 
 /* Toast */

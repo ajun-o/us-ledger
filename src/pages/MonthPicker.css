@@ -47,7 +47,7 @@
   border: none;
   font-size: 15px;
   font-weight: 600;
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
   cursor: pointer;
   padding: 4px 8px;
 }

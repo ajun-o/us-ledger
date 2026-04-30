@@ -17,7 +17,7 @@ import {
   Info,
   Shield,
   UserX,
-  Moon,
+
   Wifi,
   RefreshCw,
   Hand,
@@ -51,8 +51,6 @@ interface Props {
   onBack: () => void
   onLogout: () => void
   onOpenCouplePage?: () => void
-  theme: string | null
-  onThemeChange: (theme: string) => void
 }
 
 const NOTIFY_KEY = 'us_ledger_notify_settings'
@@ -85,7 +83,7 @@ function saveSyncMethod(m: string) {
   localStorage.setItem(SYNC_KEY, m)
 }
 
-export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, onThemeChange }: Props) {
+export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) {
   const [showPermDialog, setShowPermDialog] = useState(false)
   const [showVisDialog, setShowVisDialog] = useState(false)
   const [permission, setPermission] = useState(getPartnerPermission)
@@ -97,6 +95,22 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, on
   const [showSyncPicker, setShowSyncPicker] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [showDeleteAccount, setShowDeleteAccount] = useState(false)
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({ current: '', newPass: '', confirm: '' })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [showPhoneDialog, setShowPhoneDialog] = useState(false)
+  const [phoneForm, setPhoneForm] = useState({ phone: '', code: '' })
+  const [phoneLoading, setPhoneLoading] = useState(false)
+  const [phoneBound, setPhoneBound] = useState(() => {
+    try { return localStorage.getItem('us_ledger_phone_bound') || '' } catch { return '' }
+  })
+  const [wechatBound, setWechatBound] = useState(() => {
+    try { return localStorage.getItem('us_ledger_wechat_bound') === 'true' } catch { return false }
+  })
+  const [appleBound, setAppleBound] = useState(() => {
+    try { return localStorage.getItem('us_ledger_apple_bound') === 'true' } catch { return false }
+  })
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -214,6 +228,70 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, on
     showToast('数据已清空，请刷新页面')
   }
 
+  const handlePasswordChange = async () => {
+    setPasswordError('')
+    if (!passwordForm.current || !passwordForm.newPass || !passwordForm.confirm) {
+      setPasswordError('请填写所有字段')
+      return
+    }
+    if (passwordForm.newPass.length < 6) {
+      setPasswordError('新密码长度至少6位')
+      return
+    }
+    if (passwordForm.newPass !== passwordForm.confirm) {
+      setPasswordError('两次输入的新密码不一致')
+      return
+    }
+    setPasswordLoading(true)
+    try {
+      const { supabase } = await import('../lib/supabase')
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.newPass })
+      if (error) {
+        if (error.message.includes('recent') || error.message.includes('re-authenticate') || error.status === 401) {
+          setPasswordError('出于安全考虑，请退出登录后点击"忘记密码"来重置密码')
+        } else {
+          setPasswordError(error.message || '修改失败')
+        }
+      } else {
+        showToast('密码修改成功')
+        setShowPasswordDialog(false)
+        setPasswordForm({ current: '', newPass: '', confirm: '' })
+      }
+    } catch (e) {
+      setPasswordError('网络错误，请稍后再试')
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
+  const handlePhoneBind = () => {
+    if (!phoneForm.phone.trim()) {
+      showToast('请输入手机号')
+      return
+    }
+    // 模拟绑定：保存到 localStorage
+    const masked = phoneForm.phone.trim().replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+    localStorage.setItem('us_ledger_phone_bound', masked)
+    setPhoneBound(masked)
+    setShowPhoneDialog(false)
+    setPhoneForm({ phone: '', code: '' })
+    showToast('手机号绑定成功')
+  }
+
+  const handleWechatToggle = () => {
+    const next = !wechatBound
+    localStorage.setItem('us_ledger_wechat_bound', String(next))
+    setWechatBound(next)
+    showToast(next ? '微信绑定成功' : '微信已解绑')
+  }
+
+  const handleAppleToggle = () => {
+    const next = !appleBound
+    localStorage.setItem('us_ledger_apple_bound', String(next))
+    setAppleBound(next)
+    showToast(next ? 'Apple ID 绑定成功' : 'Apple ID 已解绑')
+  }
+
   const handleDeleteAccount = () => {
     const keysToRemove: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
@@ -245,22 +323,17 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, on
         case 'restore': handleRestore(); break
         case 'export': handleExportCSV(); break
         case 'clear': setShowClearConfirm(true); break
-        case 'dark': toggleTheme(); break
         case 'delete-account': setShowDeleteAccount(true); break
+        case 'password': setShowPasswordDialog(true); break
+        case 'phone': setShowPhoneDialog(true); break
+        case 'wechat': handleWechatToggle(); break
+        case 'apple': handleAppleToggle(); break
       }
       return
     }
     // 无 action 的项 → toast
     const label = 'label' in item ? item.label : ''
     showToast(`${label}功能开发中`)
-  }
-
-  const toggleTheme = () => {
-    const themes = ['default', 'dark', 'warm', 'cool']
-    const currentIdx = themes.indexOf(theme || 'default')
-    const next = themes[(currentIdx + 1) % themes.length]
-    onThemeChange(next)
-    showToast(`主题已切换为: ${next}`)
   }
 
   const syncLabel = syncMethod === 'realtime' ? '实时同步' : syncMethod === 'wifi' ? '仅WiFi同步' : '手动同步'
@@ -277,10 +350,10 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, on
     {
       title: '账户安全',
       items: [
-        { icon: Lock, label: '修改密码', color: '#636E72' },
-        { icon: Smartphone, label: '绑定手机', description: '138****8888', color: '#636E72' },
-        { icon: MessageCircle, label: '微信绑定', description: '已绑定', color: '#07C160' },
-        { icon: Apple, label: 'Apple ID 绑定', description: '未绑定', color: '#2D3436' }
+        { icon: Lock, label: '修改密码', color: '#636E72', action: 'password' as const },
+        { icon: Smartphone, label: '绑定手机', description: phoneBound || '未绑定', color: '#636E72', action: 'phone' as const },
+        { icon: MessageCircle, label: '微信绑定', description: wechatBound ? '已绑定' : '未绑定', color: wechatBound ? '#07C160' : '#636E72', action: 'wechat' as const },
+        { icon: Apple, label: 'Apple ID 绑定', description: appleBound ? '已绑定' : '未绑定', color: appleBound ? '#2D3436' : '#636E72', action: 'apple' as const }
       ]
     },
     {
@@ -306,12 +379,6 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, on
         { icon: Download, label: '数据恢复', description: '从备份文件恢复', color: '#0984E3', action: 'restore' as const },
         { icon: Upload, label: '导出账单', description: '导出为 CSV 文件', color: '#6C5CE7', action: 'export' as const },
         { icon: Trash2, label: '清空数据', danger: true, description: '清除所有本地数据', color: '#E74C3C', action: 'clear' as const }
-      ]
-    },
-    {
-      title: '显示',
-      items: [
-        { icon: Moon, label: '深色模式', description: `当前: ${theme || '默认'}`, color: '#636E72', action: 'dark' as const }
       ]
     },
     {
@@ -591,6 +658,86 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage, theme, on
             <div className="dialog-footer">
               <button className="dialog-btn secondary" onClick={() => setShowDeleteAccount(false)}>取消</button>
               <button className="dialog-btn danger" onClick={handleDeleteAccount}>确认注销</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 修改密码弹窗 */}
+      {showPasswordDialog && (
+        <div className="settings-dialog-overlay" onClick={() => { setShowPasswordDialog(false); setPasswordError(''); setPasswordForm({ current: '', newPass: '', confirm: '' }) }}>
+          <div className="settings-dialog" onClick={e => e.stopPropagation()}>
+            <div className="dialog-header">
+              <h3>修改密码</h3>
+              <button className="dialog-close" onClick={() => { setShowPasswordDialog(false); setPasswordError(''); setPasswordForm({ current: '', newPass: '', confirm: '' }) }}><X size={20} /></button>
+            </div>
+            <div className="dialog-body">
+              <div className="password-form">
+                <input
+                  className="password-input"
+                  type="password"
+                  placeholder="当前密码"
+                  value={passwordForm.current}
+                  onChange={e => { setPasswordForm(prev => ({ ...prev, current: e.target.value })); setPasswordError('') }}
+                />
+                <input
+                  className="password-input"
+                  type="password"
+                  placeholder="新密码（至少6位）"
+                  value={passwordForm.newPass}
+                  onChange={e => { setPasswordForm(prev => ({ ...prev, newPass: e.target.value })); setPasswordError('') }}
+                />
+                <input
+                  className="password-input"
+                  type="password"
+                  placeholder="确认新密码"
+                  value={passwordForm.confirm}
+                  onChange={e => { setPasswordForm(prev => ({ ...prev, confirm: e.target.value })); setPasswordError('') }}
+                />
+                {passwordError && <p className="password-error">{passwordError}</p>}
+              </div>
+            </div>
+            <div className="dialog-footer">
+              <button className="dialog-btn secondary" onClick={() => { setShowPasswordDialog(false); setPasswordError(''); setPasswordForm({ current: '', newPass: '', confirm: '' }) }}>取消</button>
+              <button className="dialog-btn primary" onClick={handlePasswordChange} disabled={passwordLoading}>
+                {passwordLoading ? '修改中...' : '确认修改'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 绑定手机弹窗 */}
+      {showPhoneDialog && (
+        <div className="settings-dialog-overlay" onClick={() => setShowPhoneDialog(false)}>
+          <div className="settings-dialog" onClick={e => e.stopPropagation()}>
+            <div className="dialog-header">
+              <h3>绑定手机</h3>
+              <button className="dialog-close" onClick={() => setShowPhoneDialog(false)}><X size={20} /></button>
+            </div>
+            <div className="dialog-body">
+              <div className="password-form">
+                <input
+                  className="password-input"
+                  type="tel"
+                  placeholder="请输入手机号"
+                  value={phoneForm.phone}
+                  onChange={e => setPhoneForm(prev => ({ ...prev, phone: e.target.value }))}
+                  maxLength={11}
+                />
+                <input
+                  className="password-input"
+                  type="text"
+                  placeholder="验证码（模拟）"
+                  value={phoneForm.code}
+                  onChange={e => setPhoneForm(prev => ({ ...prev, code: e.target.value }))}
+                  maxLength={6}
+                />
+              </div>
+            </div>
+            <div className="dialog-footer">
+              <button className="dialog-btn secondary" onClick={() => setShowPhoneDialog(false)}>取消</button>
+              <button className="dialog-btn primary" onClick={handlePhoneBind} disabled={phoneLoading}>确认绑定</button>
             </div>
           </div>
         </div>

@@ -16,7 +16,7 @@
   left: 0;
   right: 0;
   height: 200px;
-  background: linear-gradient(180deg, #A8D5BA 0%, #C8E6C9 100%);
+  background: linear-gradient(180deg, var(--primary, #A8D5BA) 0%, #C8E6C9 100%);
   z-index: 0;
 }
 
@@ -195,7 +195,7 @@
   align-items: center;
   gap: 4px;
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #A8D5BA;
+  border: 1px solid var(--primary, #A8D5BA);
   border-radius: 12px;
   padding: 4px 10px;
   font-size: 12px;
@@ -441,12 +441,12 @@
 }
 
 .sort-menu button.active {
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
   font-weight: 600;
 }
 
 .sort-check {
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
   font-weight: 700;
 }
 
@@ -638,7 +638,7 @@ mark.highlight {
 }
 
 .action-edit {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
 }
 
 .action-delete {
@@ -712,7 +712,7 @@ mark.highlight {
 }
 
 .batch-btn.modify {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   flex: 1;
 }
@@ -802,7 +802,7 @@ mark.highlight {
   height: 48px;
   border-radius: 12px;
   border: none;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   font-size: 16px;
   font-weight: 600;
@@ -812,7 +812,7 @@ mark.highlight {
 
 .filter-apply-btn:active {
   transform: scale(0.98);
-  background: #8BC4A4;
+  background: var(--primary-dark, #8BC4A4);
 }
 
 /* 筛选区域 */
@@ -845,8 +845,8 @@ mark.highlight {
 }
 
 .filter-chip.active {
-  background: rgba(168, 213, 186, 0.15);
-  border-color: #A8D5BA;
+  background: rgba(var(--primary-rgb), 0.15);
+  border-color: var(--primary, #A8D5BA);
   color: #2D3436;
   font-weight: 500;
 }
@@ -869,7 +869,7 @@ mark.highlight {
 }
 
 .cat-tab.active {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   font-weight: 500;
 }
@@ -893,7 +893,7 @@ mark.highlight {
 }
 
 .amount-range input:focus {
-  border-color: #A8D5BA;
+  border-color: var(--primary, #A8D5BA);
 }
 
 .amount-range span {
@@ -927,7 +927,7 @@ mark.highlight {
 .undo-btn {
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
   padding: 6px 16px;
   border-radius: 8px;
   font-size: 13px;
@@ -937,8 +937,8 @@ mark.highlight {
 }
 
 .undo-btn:active {
-  background: rgba(168, 213, 186, 0.2);
-  border-color: #A8D5BA;
+  background: rgba(var(--primary-rgb), 0.2);
+  border-color: var(--primary, #A8D5BA);
 }
 
 /* ========== 动画 ========== */

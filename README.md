@@ -72,16 +72,16 @@ React 19 + TypeScript + Vite 8 + Supabase Auth/DB + recharts + Lucide Icons
 - 邀请码生成/复制/分享 + 加入空间（输入邀请码）
 - 解绑二次确认
 - 功能入口：收支分类 / 多账本 / 预算 / 存钱 / 购物清单 / 标签 / 汇率 / 小工具
-- 账单/资产入口：账单管理 / 定时记账 / 账单报告 / 资产
+- 账单/资产入口：账单管理 / 定时记账 / 账单报告 / 资产 / 外卖订单 / 物品管理 / 订阅管理
 - 记账偏好：设置默认记账人和默认收支类型（localStorage 持久化）
-- 个性化：5主题色 + 3档字体 + 实时预览
+- 个性化：5主题色 + 3档字体 + 深色模式三选一（浅色/深色/跟随系统）+ 实时预览
 
 ### 设置页（Settings）
 - 伴侣管理：绑定管理 / 对方权限设置 / 共同数据可见性
 - 通知设置：记账提醒 / 预算预警 / 伴侣通知 / 日报周报（开关持久化）
 - 同步方式：实时同步 / 仅WiFi / 手动同步 + 手动同步按钮
 - 数据管理：备份（JSON下载）/ 恢复（文件上传）/ 导出CSV / 清空数据
-- 深色模式：多主题循环切换
+- 账户安全：修改密码（Supabase Auth）/ 绑定手机 / 微信绑定 / Apple ID 绑定
 - 快捷指令 / 帮助中心 / 联系客服（模拟对话） / 官方媒体 / 分享 / 关于
 - 注销账号（二次确认 + 清除数据 + 退出登录）
 - 退出登录
@@ -152,7 +152,10 @@ src/
 │   ├── ShoppingList.tsx      # 购物清单
 │   ├── ExchangeRate.tsx      # 汇率换算
 │   ├── Toolbox.tsx           # 小工具箱
-│   └── Personalization.tsx   # 个性化设置
+│   ├── Personalization.tsx   # 个性化设置
+│   ├── FoodOrders.tsx          # 外卖订单管理
+│   ├── ItemManager.tsx         # 物品管理
+│   └── SubscriptionManager.tsx # 订阅管理
 ├── components/
 │   └── DynamicIsland.tsx     # 底部导航栏
 └── main.tsx                  # 入口

@@ -8,7 +8,7 @@
 .br-menu-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:510}
 .br-period-menu{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:#FFF;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.15);padding:8px;z-index:511;display:flex;flex-direction:column;gap:2px}
 .br-period-menu button{padding:10px 20px;border:none;background:none;border-radius:8px;font-size:14px;color:#2D3436;cursor:pointer;white-space:nowrap}
-.br-period-menu button.active{background:#A8D5BA30;color:#A8D5BA;font-weight:600}
+.br-period-menu button.active{background:var(--primary, #A8D5BA)30;color:var(--primary, #A8D5BA);font-weight:600}
 .br-body{padding:16px}
 .br-card{background:#FFF;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
 .br-card h3{font-size:16px;font-weight:600;color:#2D3436;margin:0 0 16px}

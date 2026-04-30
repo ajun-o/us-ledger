@@ -185,8 +185,8 @@ export function HelpCenterContent({ onBack }: SubPageProps) {
         <h3 className="subpage-section-title">新手指引</h3>
         <div className="guide-cards">
           <div className="guide-card">
-            <div className="guide-card-icon" style={{ background: '#A8D5BA20' }}>
-              <Play size={20} color="#A8D5BA" />
+            <div className="guide-card-icon" style={{ background: 'rgba(var(--primary-rgb), 0.125)' }}>
+              <Play size={20} color="var(--primary, #A8D5BA)" />
             </div>
             <div className="guide-card-text">
               <span className="guide-card-title">图文教程</span>

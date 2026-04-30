@@ -18,19 +18,8 @@ import './App.css'
 type Page = 'splash' | 'welcome' | 'phone-login' | 'phone-register' | 'theme' | 'main' | 'settings' | 'assets'
 type TabType = 'home' | 'bills' | 'reports' | 'profile'
 
-const THEME_KEY = 'us_ledger_theme'
-
-function getInitialTheme(): string | null {
-  try {
-    return localStorage.getItem(THEME_KEY) || null
-  } catch {
-    return null
-  }
-}
-
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('splash')
-  const [selectedTheme, setSelectedTheme] = useState<string | null>(getInitialTheme)
   const [activeTab, setActiveTab] = useState<TabType>('home')
   const [showAddRecord, setShowAddRecord] = useState(false)
   const [addRecordDefaultMember, setAddRecordDefaultMember] = useState<'mine' | 'partner' | 'joint' | undefined>(undefined)
@@ -58,9 +47,7 @@ function App() {
     }
   }
 
-  const handleThemeConfirm = (theme: string) => {
-    localStorage.setItem(THEME_KEY, theme)
-    setSelectedTheme(theme)
+  const handleThemeConfirm = (_theme: string) => {
     setOnboardingComplete()
     setCurrentPage('main')
   }
@@ -99,8 +86,6 @@ function App() {
 
   const handleLogout = () => {
     clearAuthData()
-    localStorage.removeItem(THEME_KEY)
-    setSelectedTheme(null)
     setCurrentPage('welcome')
   }
 
@@ -166,7 +151,6 @@ function App() {
         <>
           {activeTab === 'home' && (
             <Home
-              theme={selectedTheme}
               activeTab={activeTab}
               onTabChange={handleTabChange}
               onAddRecord={handleOpenAddRecord}
@@ -202,7 +186,7 @@ function App() {
         </>
       )}
       {currentPage === 'settings' && (
-        <Settings onBack={handleBackFromSettings} onLogout={handleLogout} onOpenCouplePage={handleOpenCoupleFromSettings} theme={selectedTheme} onThemeChange={(t) => { localStorage.setItem(THEME_KEY, t); setSelectedTheme(t) }} />
+        <Settings onBack={handleBackFromSettings} onLogout={handleLogout} onOpenCouplePage={handleOpenCoupleFromSettings} />
       )}
       {currentPage === 'assets' && (
         <Assets onBack={() => setCurrentPage('main')} />

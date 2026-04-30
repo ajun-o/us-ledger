@@ -1,0 +1,21 @@
+.fo-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#F8F9FA;z-index:500;animation:slideUp .3s ease;overflow-y:auto}
+.fo-page{min-height:100vh}
+.fo-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));background:#FFF;border-bottom:1px solid #F0F0F0}
+.fo-header h2{font-size:18px;font-weight:600;color:#2D3436}
+.fo-back{width:40px;height:40px;border:none;background:none;color:#2D3436;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.fo-body{padding:16px}
+.fo-form{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.fo-input{flex:1;min-width:80px;padding:10px 12px;border:1px solid #E8E8E8;border-radius:10px;font-size:14px;outline:none;background:#FFF}
+.fo-input:focus{border-color:var(--primary, #A8D5BA)}
+.fo-input-sm{max-width:100px}
+.fo-add-btn{width:40px;height:40px;border:none;border-radius:10px;background:var(--primary, #A8D5BA);color:#2D3436;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fo-add-btn:active{opacity:.8}
+.fo-empty{text-align:center;color:#B2BEC3;font-size:14px;padding:40px 0}
+.fo-list{display:flex;flex-direction:column;gap:8px}
+.fo-item{display:flex;align-items:center;gap:10px;background:#FFF;padding:14px 16px;border-radius:12px}
+.fo-item-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fo-item-name{font-size:15px;font-weight:500;color:#2D3436}
+.fo-item-date{font-size:12px;color:#B2BEC3}
+.fo-item-amount{font-size:15px;font-weight:600;color:#E74C3C;white-space:nowrap}
+.fo-item-del{width:32px;height:32px;border:none;background:none;color:#B2BEC3;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.fo-item-del:active{background:#F5F5F5;color:#E74C3C}

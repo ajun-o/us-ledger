@@ -47,7 +47,7 @@
   width: 40px;
   height: 40px;
   border: none;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   border-radius: 50%;
   display: flex;
@@ -147,7 +147,7 @@
   justify-content: center;
   cursor: pointer;
 }
-.cm-edit-btn { background: #A8D5BA30; color: #A8D5BA; }
+.cm-edit-btn { background: var(--primary, #A8D5BA)30; color: var(--primary, #A8D5BA); }
 .cm-del-btn { background: #E74C3C20; color: #E74C3C; }
 
 /* 表单弹窗 */
@@ -193,7 +193,7 @@
   margin-bottom: 16px;
   transition: border-color 0.2s ease;
 }
-.cm-form-input:focus { border-color: #A8D5BA; }
+.cm-form-input:focus { border-color: var(--primary, #A8D5BA); }
 
 .cm-form-label {
   font-size: 13px;
@@ -222,7 +222,7 @@
   justify-content: center;
   transition: all 0.15s ease;
 }
-.cm-emoji-btn.active { border-color: #A8D5BA; background: #FFFFFF; }
+.cm-emoji-btn.active { border-color: var(--primary, #A8D5BA); background: #FFFFFF; }
 
 .cm-color-grid {
   display: flex;
@@ -263,7 +263,7 @@
   padding: 12px;
   border: none;
   border-radius: 12px;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   font-size: 14px;
   font-weight: 600;
   color: #2D3436;
@@ -296,4 +296,4 @@
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.cm-delete-opt.active { border-color: #A8D5BA; color: #2D3436; font-weight: 500; }
+.cm-delete-opt.active { border-color: var(--primary, #A8D5BA); color: #2D3436; font-weight: 500; }

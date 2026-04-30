@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import {
-  ScanLine,
   Settings,
   ChevronRight,
   Palette,
@@ -43,6 +42,9 @@ import ShoppingList from './ShoppingList'
 import ExchangeRate from './ExchangeRate'
 import Toolbox from './Toolbox'
 import Personalization from './Personalization'
+import FoodOrders from './FoodOrders'
+import ItemManager from './ItemManager'
+import SubscriptionManager from './SubscriptionManager'
 import {
   getCoupleProfile,
   saveCoupleProfile,
@@ -90,7 +92,9 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAs
   const [joinLoading, setJoinLoading] = useState(false)
   const [joinError, setJoinError] = useState('')
   const [showBillingPref, setShowBillingPref] = useState(false)
-  const [toast, setToast] = useState('')
+  const [showFoodOrders, setShowFoodOrders] = useState(false)
+  const [showItemManager, setShowItemManager] = useState(false)
+  const [showSubscriptionManager, setShowSubscriptionManager] = useState(false)
 
   const accountingDays = getAccountingDays()
   const partnerBound = hasPartner()
@@ -190,11 +194,6 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAs
     }
   }
 
-  const showToast = (msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(''), 2000)
-  }
-
   const commonFeatures = [
     { icon: List, label: '收支分类', color: '#FF6B6B' },
     { icon: BookOpen, label: '多账本', color: '#4ECDC4' },
@@ -224,9 +223,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAs
     <div className="profile-page">
       {/* 顶部 */}
       <header className="profile-header">
-        <button className="icon-btn" onClick={() => showToast('扫码功能开发中')}>
-          <ScanLine size={20} />
-        </button>
+        <div />
         <button className="icon-btn" onClick={onOpenSettings}>
           <Settings size={20} />
         </button>
@@ -256,7 +253,7 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAs
         {/* 功能入口 */}
         <div className="feature-cards">
           <div className="feature-card" onClick={() => setShowPersonalization(true)}>
-            <Palette size={20} color="#A8D5BA" />
+            <Palette size={20} color="var(--primary, #A8D5BA)" />
             <div className="feature-text">
               <span className="feature-title">个性化</span>
               <span className="feature-desc">设置独特风格</span>
@@ -303,9 +300,9 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAs
                   if (item.label === '定时记账') setShowScheduledTasks(true)
                   if (item.label === '账单报告') setShowBillReport(true)
                   if (item.label === '资产') onGoAssets()
-                  if (item.label === '外卖订单') showToast('外卖订单功能开发中')
-                  if (item.label === '物品管理') showToast('物品管理功能开发中')
-                  if (item.label === '订阅管理') showToast('订阅管理功能开发中')
+                  if (item.label === '外卖订单') setShowFoodOrders(true)
+                  if (item.label === '物品管理') setShowItemManager(true)
+                  if (item.label === '订阅管理') setShowSubscriptionManager(true)
                 }}>
                   <div className="function-icon" style={{ background: item.color + '20' }}>
                     <Icon size={20} color={item.color} />
@@ -379,6 +376,18 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAs
 
       {showPersonalization && (
         <Personalization onClose={() => setShowPersonalization(false)} />
+      )}
+
+      {showFoodOrders && (
+        <FoodOrders onClose={() => setShowFoodOrders(false)} />
+      )}
+
+      {showItemManager && (
+        <ItemManager onClose={() => setShowItemManager(false)} />
+      )}
+
+      {showSubscriptionManager && (
+        <SubscriptionManager onClose={() => setShowSubscriptionManager(false)} />
       )}
 
       {showCouplePage && (
@@ -566,8 +575,6 @@ export default function Profile({ activeTab, onTabChange, onOpenSettings, onGoAs
         <BillingPreferences onClose={() => setShowBillingPref(false)} />
       )}
 
-      {/* Toast */}
-      {toast && <div className="profile-toast">{toast}</div>}
     </div>
   )
 }

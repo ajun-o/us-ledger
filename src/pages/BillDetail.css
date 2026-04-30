@@ -70,7 +70,7 @@
 }
 
 .detail-header .save-btn {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   border: none;
   border-radius: 16px;
   padding: 8px 16px;
@@ -150,7 +150,7 @@
   font-weight: 700;
   font-family: 'SF Mono', 'DIN Alternate', monospace;
   border: none;
-  border-bottom: 2px solid #A8D5BA;
+  border-bottom: 2px solid var(--primary, #A8D5BA);
   outline: none;
   width: 200px;
   text-align: center;
@@ -211,8 +211,8 @@
 }
 
 .category-edit-chip.selected {
-  border-color: #A8D5BA;
-  background: rgba(168, 213, 186, 0.12);
+  border-color: var(--primary, #A8D5BA);
+  background: rgba(var(--primary-rgb), 0.12);
   color: #2D3436;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .field-input:focus {
-  border-color: #A8D5BA;
+  border-color: var(--primary, #A8D5BA);
 }
 
 /* 编辑成员行 */
@@ -288,8 +288,8 @@
 }
 
 .member-chip.active {
-  border-color: #A8D5BA;
-  background: rgba(168, 213, 186, 0.12);
+  border-color: var(--primary, #A8D5BA);
+  background: rgba(var(--primary-rgb), 0.12);
   color: #2D3436;
 }
 

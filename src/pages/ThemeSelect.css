@@ -76,9 +76,9 @@
 }
 
 .theme-card.selected {
-  border-color: #A8D5BA;
+  border-color: var(--primary, #A8D5BA);
   transform: scale(1.02);
-  box-shadow: 0 4px 24px rgba(168, 213, 186, 0.4);
+  box-shadow: 0 4px 24px rgba(var(--primary-rgb), 0.4);
 }
 
 .theme-card:active {
@@ -133,7 +133,7 @@
 
 /* 简约纯色预览 */
 .minimal-preview {
-  background: linear-gradient(135deg, #A8D5BA 0%, #8BC4A4 100%);
+  background: linear-gradient(135deg, var(--primary, #A8D5BA) 0%, var(--primary-dark, #8BC4A4) 100%);
 }
 
 .preview-header {
@@ -215,7 +215,7 @@
 }
 
 .avata-a {
-  background: linear-gradient(135deg, #A8D5BA, #8BC4A4);
+  background: linear-gradient(135deg, var(--primary, #A8D5BA), var(--primary-dark, #8BC4A4));
 }
 
 .avata-b {
@@ -246,7 +246,7 @@
 
 .budget-fill {
   height: 100%;
-  background: linear-gradient(90deg, #A8D5BA, #F4A261);
+  background: linear-gradient(90deg, var(--primary, #A8D5BA), #F4A261);
   border-radius: 3px;
   transition: width 0.3s ease;
 }
@@ -282,8 +282,8 @@
 
 .theme-card.selected .card-check,
 .card-check.checked {
-  background: #A8D5BA;
-  border-color: #A8D5BA;
+  background: var(--primary, #A8D5BA);
+  border-color: var(--primary, #A8D5BA);
 }
 
 .card-name {
@@ -302,13 +302,13 @@
   height: 56px;
   border-radius: 28px;
   border: none;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(168, 213, 186, 0.4);
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.4);
 }
 
 .confirm-btn:active:not(:disabled) {
@@ -370,7 +370,7 @@
   height: 52px;
   border-radius: 26px;
   border: none;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   font-size: 16px;
   font-weight: 600;

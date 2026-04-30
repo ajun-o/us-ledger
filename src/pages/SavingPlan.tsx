@@ -109,7 +109,7 @@ export default function SavingPlan({onClose}:Props) {
               <h3>{detailPlan.name}</h3>
               <div className="sp-detail-progress">
                 <div className="sp-dp-ring">
-                  <svg width="100" height="100"><circle cx="50" cy="50" r="45" fill="none" stroke="#F0F0F0" strokeWidth="10"/><circle cx="50" cy="50" r="45" fill="none" stroke="#A8D5BA" strokeWidth="10" strokeDasharray={`${Math.min(100,detailPlan.saved/detailPlan.target)*283/100} 283`} strokeLinecap="round" transform="rotate(-90 50 50)"/></svg>
+                  <svg width="100" height="100"><circle cx="50" cy="50" r="45" fill="none" stroke="#F0F0F0" strokeWidth="10"/><circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary, #A8D5BA)" strokeWidth="10" strokeDasharray={`${Math.min(100,detailPlan.saved/detailPlan.target)*283/100} 283`} strokeLinecap="round" transform="rotate(-90 50 50)"/></svg>
                   <div className="sp-dp-center"><span>¥{detailPlan.saved.toFixed(0)}</span></div>
                 </div>
               </div>

@@ -16,7 +16,7 @@
   left: 0;
   right: 0;
   height: 180px;
-  background: linear-gradient(180deg, #A8D5BA 0%, #C8E6C9 100%);
+  background: linear-gradient(180deg, var(--primary, #A8D5BA) 0%, #C8E6C9 100%);
   z-index: 0;
 }
 
@@ -700,7 +700,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   border: none;
   border-radius: 28px;
   padding: 14px 24px;
@@ -708,7 +708,7 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(168, 213, 186, 0.5);
+  box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.5);
   z-index: 50;
   transition: all 0.2s ease;
 }
@@ -800,9 +800,9 @@
 }
 
 .reports-filter-drawer .filter-chip.active {
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
-  border-color: #A8D5BA;
+  border-color: var(--primary, #A8D5BA);
   font-weight: 600;
 }
 
@@ -817,7 +817,7 @@
   height: 48px;
   border-radius: 12px;
   border: none;
-  background: #A8D5BA;
+  background: var(--primary, #A8D5BA);
   color: #2D3436;
   font-size: 16px;
   font-weight: 600;
@@ -827,7 +827,7 @@
 
 .reports-filter-drawer .filter-apply-btn:active {
   transform: scale(0.98);
-  background: #8BC4A4;
+  background: var(--primary-dark, #8BC4A4);
 }
 
 @keyframes slideInRight {

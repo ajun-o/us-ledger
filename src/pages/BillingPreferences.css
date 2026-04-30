@@ -40,7 +40,7 @@
 }
 
 .bp-save {
-  color: #A8D5BA;
+  color: var(--primary, #A8D5BA);
 }
 
 .bp-body {
@@ -83,8 +83,8 @@
 }
 
 .bp-option.active {
-  border-color: #A8D5BA;
-  background: #A8D5BA15;
+  border-color: var(--primary, #A8D5BA);
+  background: var(--primary, #A8D5BA)15;
   color: #2D3436;
   font-weight: 600;
 }

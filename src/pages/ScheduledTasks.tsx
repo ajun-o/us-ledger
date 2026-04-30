@@ -70,7 +70,7 @@ export default function ScheduledTasks({onClose}:Props) {
                   <span className="st-meta">{t.categoryName} · {CYCLES.find(c=>c.id===t.cycle)?.label} · ¥{t.amount}</span>
                 </div>
                 <button className={`st-toggle ${t.enabled?'on':'off'}`} onClick={e=>{e.stopPropagation();toggle(t.id)}}>
-                  {t.enabled?<ToggleRight size={24} color="#A8D5BA"/>:<ToggleLeft size={24} color="#D1D5DB"/>}
+                  {t.enabled?<ToggleRight size={24} color="var(--primary, #A8D5BA)"/>:<ToggleLeft size={24} color="#D1D5DB"/>}
                 </button>
               </div>
               <div className="st-card-actions">
