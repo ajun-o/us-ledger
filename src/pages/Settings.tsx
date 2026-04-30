@@ -101,7 +101,6 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [showPhoneDialog, setShowPhoneDialog] = useState(false)
   const [phoneForm, setPhoneForm] = useState({ phone: '', code: '' })
-  const [phoneLoading, setPhoneLoading] = useState(false)
   const [phoneBound, setPhoneBound] = useState(() => {
     try { return localStorage.getItem('us_ledger_phone_bound') || '' } catch { return '' }
   })
@@ -737,7 +736,7 @@ export default function Settings({ onBack, onLogout, onOpenCouplePage }: Props) 
             </div>
             <div className="dialog-footer">
               <button className="dialog-btn secondary" onClick={() => setShowPhoneDialog(false)}>取消</button>
-              <button className="dialog-btn primary" onClick={handlePhoneBind} disabled={phoneLoading}>确认绑定</button>
+              <button className="dialog-btn primary" onClick={handlePhoneBind}>确认绑定</button>
             </div>
           </div>
         </div>

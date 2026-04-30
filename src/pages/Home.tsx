@@ -22,7 +22,6 @@ type ViewMode = 'mine' | 'partner' | 'joint'
 type TabType = 'home' | 'bills' | 'reports' | 'profile'
 
 interface Props {
-  theme: string | null
   activeTab: TabType
   onTabChange: (tab: TabType) => void
   onAddRecord: (defaultMember?: 'mine' | 'partner' | 'joint') => void
@@ -33,7 +32,7 @@ interface Props {
 
 const EYE_KEY = 'us_ledger_show_amount'
 
-export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoAssets, refreshKey, onDataChange }: Props) {
+export default function Home({ activeTab, onTabChange, onAddRecord, onGoAssets, refreshKey, onDataChange }: Props) {
   const now = new Date()
   const [selectedYear, setSelectedYear] = useState(now.getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1)
@@ -360,7 +359,7 @@ export default function Home({ theme, activeTab, onTabChange, onAddRecord, onGoA
   }
 
   return (
-    <div className={`home-page ${theme || ''}`}>
+    <div className="home-page">
       <div className="page-bg"></div>
 
       {/* 顶部 */}
