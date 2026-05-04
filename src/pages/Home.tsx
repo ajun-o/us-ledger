@@ -83,14 +83,20 @@ export default function Home({ activeTab, onTabChange, onAddRecord, onGoAssets, 
         startDate = `${selectedYear}-${m}-${String(Math.max(1, lastDay - 3)).padStart(2, '0')}`
       }
 
-      const [, bills] = await Promise.all([
-        fetchMonthStats(selectedYear, selectedMonth),
-        fetchBills({ startDate, endDate, limit: 50 })
-      ])
+      // 立即返回本地缓存数据
+      const bills = await fetchBills(
+        { startDate, endDate, limit: 50 },
+        async (freshBills) => {
+          const transformed = await transformBillsPerspective(freshBills)
+          setRecentBills(transformed)
+        }
+      )
 
       const transformedBills = await transformBillsPerspective(bills)
-
       setRecentBills(transformedBills)
+
+      // 后台同步月度统计（不阻塞渲染）
+      fetchMonthStats(selectedYear, selectedMonth)
       return true
     } catch (e) {
       console.error('加载首页数据失败', e)

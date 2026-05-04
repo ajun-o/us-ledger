@@ -45,12 +45,26 @@ const DARK_OPTIONS: { id: DarkMode; label: string; icon: typeof Sun }[] = [
   { id: 'system', label: '跟随系统', icon: Monitor },
 ]
 
+function isThemeName(v: string): v is ThemeName {
+  return THEMES.some(t => t.name === v)
+}
+
 function loadTheme(): ThemeName {
-  try { const r = localStorage.getItem(THEME_KEY); if (r) return r as ThemeName } catch {}
+  try {
+    const r = localStorage.getItem(THEME_KEY)
+    if (r && isThemeName(r)) return r
+  } catch {}
   return 'green'
 }
+function isDarkMode(v: string): v is DarkMode {
+  return DARK_OPTIONS.some(o => o.id === v)
+}
+
 function loadDarkMode(): DarkMode {
-  try { const r = localStorage.getItem(DARK_MODE_KEY); if (r) return r as DarkMode } catch {}
+  try {
+    const r = localStorage.getItem(DARK_MODE_KEY)
+    if (r && isDarkMode(r)) return r
+  } catch {}
   return 'light'
 }
 
@@ -61,8 +75,15 @@ function applyDarkMode(mode: DarkMode) {
   localStorage.setItem(DARK_MODE_KEY, mode)
 }
 
+function isFontSize(v: string): v is FontSize {
+  return FONT_SIZES.some(f => f.id === v)
+}
+
 function loadFontSize(): FontSize {
-  try { const r = localStorage.getItem(FONT_KEY); if (r) return r as FontSize } catch {}
+  try {
+    const r = localStorage.getItem(FONT_KEY)
+    if (r && isFontSize(r)) return r
+  } catch {}
   return 'medium'
 }
 
@@ -85,7 +106,7 @@ export default function Personalization({ onClose }: Props) {
   const [theme, setTheme] = useState<ThemeName>(loadTheme)
   const [fontSize, setFontSize] = useState<FontSize>(loadFontSize)
   const [darkMode, setDarkMode] = useState<DarkMode>(loadDarkMode)
-  const currentTheme = THEMES.find(t => t.name === theme)!
+  const currentTheme = THEMES.find(t => t.name === theme) || THEMES[0]
 
   const handleThemeChange = (t: ThemeConfig) => {
     setTheme(t.name)

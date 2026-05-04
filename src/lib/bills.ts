@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { supabaseWithTimeout } from './timeout'
 
 export interface BillItem {
   id: string
@@ -14,7 +15,6 @@ export interface BillItem {
   account: string
 }
 
-/** 根据账单创建者 ID 解析当前用户的视角标签 */
 export function resolveMemberTag(
   billUserId: string,
   myUserId: string,
@@ -35,49 +35,68 @@ export async function getCurrentUserId(): Promise<string | null> {
   return user?.id ?? null
 }
 
-/** 将账单列表的 member 标签转换为当前用户的视角 */
 export async function transformBillsPerspective(bills: BillItem[]): Promise<BillItem[]> {
   try {
     const myUserId = await getCurrentUserId()
-    if (!myUserId) {
-      console.warn('[bills] transformBillsPerspective: 无法获取当前用户ID，跳过视角转换')
-      return bills
-    }
-
+    if (!myUserId) return bills
     const { getPartnerUserId } = await import('./couple-supabase')
     const partnerUserId = await getPartnerUserId()
-    console.log('[bills] transformBillsPerspective: 我的ID=' + myUserId?.slice(0, 8) + '..., 伴侣ID=' + (partnerUserId?.slice(0, 8) + '...' || '无'))
-
     return bills.map(bill => {
       if (!bill.user_id) return bill
       const newMember = resolveMemberTag(bill.user_id, myUserId, partnerUserId, bill.member)
-      if (newMember !== bill.member) {
-        console.log(`[bills] 视角转换: 账单 ${bill.id.slice(0, 8)}... member ${bill.member} → ${newMember} (账单创建者=${bill.user_id.slice(0, 8)}...)`)
-      }
-      return { ...bill, member: newMember }
+      return newMember !== bill.member ? { ...bill, member: newMember } : bill
     })
-  } catch (e) {
-    console.error('[bills] transformBillsPerspective 异常:', e)
+  } catch {
     return bills
   }
 }
 
-// ====== localStorage fallback ======
+// ====== 内存缓存 ======
 
 const LS_KEY = 'us_ledger_bills'
 const QUEUE_KEY = 'us_ledger_queue'
+const SYNC_EVENT = 'bills-synced'
+
+let _memoryCache: BillItem[] | null = null
 
 function loadLocal(): BillItem[] {
+  if (_memoryCache) return _memoryCache
   try {
     const raw = localStorage.getItem(LS_KEY)
-    return raw ? JSON.parse(raw) : []
+    const bills: BillItem[] = raw ? JSON.parse(raw) : []
+    _memoryCache = bills
+    return bills
   } catch {
+    _memoryCache = []
     return []
   }
 }
 
 function saveLocal(bills: BillItem[]): void {
-  localStorage.setItem(LS_KEY, JSON.stringify(bills))
+  _memoryCache = bills
+  try { localStorage.setItem(LS_KEY, JSON.stringify(bills)) } catch { /* quota exceeded */ }
+}
+
+function addToLocal(bill: BillItem): void {
+  const bills = loadLocal()
+  const idx = bills.findIndex(b => b.id === bill.id)
+  if (idx >= 0) bills[idx] = bill
+  else bills.push(bill)
+  saveLocal(bills)
+}
+
+function updateInLocal(id: string, partial: Partial<BillItem>): BillItem {
+  const bills = loadLocal()
+  const idx = bills.findIndex(b => b.id === id)
+  if (idx === -1) throw new Error(`Bill not found: ${id}`)
+  bills[idx] = { ...bills[idx], ...partial, id }
+  saveLocal(bills)
+  return bills[idx]
+}
+
+function removeFromLocal(id: string): void {
+  const bills = loadLocal().filter(b => b.id !== id)
+  saveLocal(bills)
 }
 
 // ====== 离线队列 ======
@@ -88,9 +107,7 @@ function loadQueue(): QueuedBill[] {
   try {
     const raw = localStorage.getItem(QUEUE_KEY)
     return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
+  } catch { return [] }
 }
 
 function saveQueue(queue: QueuedBill[]): void {
@@ -106,25 +123,14 @@ export async function syncQueue(): Promise<number> {
   if (queue.length === 0) return 0
   if (!navigator.onLine) return queue.length
 
-  const useSupabase = await checkSupabase()
-  if (!useSupabase) {
-    // Supabase 不可用，直接写入 localStorage
-    const bills = loadLocal()
-    for (const item of queue) {
-      bills.push({ ...item, id: item._localId })
-    }
-    saveLocal(bills)
-    saveQueue([])
-    return 0
-  }
-
   let synced = 0
   const remaining: QueuedBill[] = []
   for (const item of queue) {
     try {
-      const { error } = await supabase.from('bills').insert(toDbRow(item)).select().single()
+      const { error } = await supabaseWithTimeout(
+        supabase.from('bills').insert(toDbRow(item)).select().single()
+      )
       if (error) {
-        markSupabaseFailed()
         remaining.push(item)
       } else {
         synced++
@@ -134,22 +140,24 @@ export async function syncQueue(): Promise<number> {
     }
   }
   saveQueue(remaining)
+  if (synced > 0) {
+    _memoryCache = null
+    window.dispatchEvent(new CustomEvent(SYNC_EVENT))
+  }
   return remaining.length
 }
 
-// 监听网络恢复自动同步
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => {
     syncQueue().then(remaining => {
-      if (remaining === 0 && loadQueue().length > 0) {
-        // 全部同步完成，触发页面刷新
-        window.dispatchEvent(new CustomEvent('queue-synced'))
+      if (remaining === 0 && loadQueue().length === 0) {
+        window.dispatchEvent(new CustomEvent(SYNC_EVENT))
       }
     })
   })
 }
 
-// ====== supabase helpers (keep for future) ======
+// ====== supabase helpers ======
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toBillItem(row: Record<string, any>): BillItem {
@@ -183,128 +191,139 @@ function toDbRow(bill: Partial<BillItem>): Record<string, unknown> {
   return row
 }
 
-let supabaseReady = false
-let supabaseChecked = false
+// ====== Supabase 连接状态 ======
 
-async function checkSupabase(): Promise<boolean> {
-  if (supabaseChecked) return supabaseReady
-  supabaseChecked = true
-  try {
-    const { error } = await supabase.from('bills').select('id').limit(1)
-    if (!error) {
-      supabaseReady = true
-      return true
-    }
-  } catch { /* fall through */ }
-  return false
-}
+let _supabaseFailed = false
 
 function markSupabaseFailed() {
-  if (supabaseReady) {
-    supabaseReady = false
-    supabaseChecked = false
-    console.warn('[bills] Supabase 操作失败，降级到 localStorage')
+  if (!_supabaseFailed) {
+    _supabaseFailed = true
+    console.warn('[bills] Supabase 不可用，使用本地数据')
   }
 }
 
-// ====== CRUD API ======
+function markSupabaseOk() {
+  _supabaseFailed = false
+}
 
-export async function fetchBills(params?: {
+export function isSupabaseAvailable(): boolean {
+  return !_supabaseFailed
+}
+
+// ====== 后台同步 Supabase → localStorage ======
+
+async function backgroundSyncFromSupabase(params?: {
   member?: string
   startDate?: string
   endDate?: string
   search?: string
   limit?: number
 }): Promise<BillItem[]> {
-  // 诊断: 确认当前认证状态
-  const { data: { user } } = await supabase.auth.getUser()
-  console.log('[bills] fetchBills 当前用户:', user?.id?.slice(0, 8) + '...', '手机号:', user?.phone)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query = supabase
+    .from('bills')
+    .select('*')
+    .order('date', { ascending: false })
+    .order('time', { ascending: false })
 
-  // 同时从 Supabase 和 localStorage 读取，以 ID 去重合并
-  const idSet = new Set<string>()
-  const bills: BillItem[] = []
+  if (params?.member && params.member !== 'all') query = query.eq('member', params.member)
+  if (params?.startDate) query = query.gte('date', params.startDate)
+  if (params?.endDate) query = query.lte('date', params.endDate)
+  if (params?.search) {
+    const s = params.search
+    query = query.or(`note.ilike.%${s}%,category_name.ilike.%${s}%`)
+  }
+  if (params?.limit) query = query.limit(params.limit)
 
-  // 优先 Supabase
-  try {
-    let query = supabase
-      .from('bills')
-      .select('*')
-      .order('date', { ascending: false })
-      .order('time', { ascending: false })
-
-    if (params?.member && params.member !== 'all') {
-      query = query.eq('member', params.member)
-    }
-    if (params?.startDate) query = query.gte('date', params.startDate)
-    if (params?.endDate) query = query.lte('date', params.endDate)
-    if (params?.search) {
-      const s = params.search
-      query = query.or(`note.ilike.%${s}%,category_name.ilike.%${s}%`)
-    }
-    if (params?.limit) query = query.limit(params.limit)
-
-    const { data, error } = await query
-    if (error) {
-      console.error('[bills] Supabase 查询失败:', error.message, error.code, error.details)
-    } else if (data) {
-      console.log(`[bills] Supabase 返回 ${data.length} 条账单`)
-      for (const row of data) {
-        const bill = toBillItem(row)
-        idSet.add(bill.id)
-        bills.push(bill)
-      }
-    }
-  } catch (err) {
-    console.error('[bills] Supabase 查询异常:', err)
+  const { data, error } = await supabaseWithTimeout(query)
+  if (error || !data) {
+    markSupabaseFailed()
+    throw new Error('Supabase sync failed')
   }
 
-  // 补充 localStorage 中 Supabase 没有的账单
+  markSupabaseOk()
+
+  // 合并到 localStorage（以 Supabase 数据为准，更新本地缓存）
+  const supabaseBills = (data as Record<string, unknown>[]).map(toBillItem)
+  const supabaseIds = new Set(supabaseBills.map(b => b.id))
   const localBills = loadLocal()
-  let localMergeCount = 0
-  for (const bill of localBills) {
-    if (!idSet.has(bill.id)) {
-      bills.push(bill)
-      localMergeCount++
-    }
-  }
-  console.log(`[bills] localStorage 补充 ${localMergeCount} 条，合并后共 ${bills.length} 条`)
 
-  // 应用本地过滤（Supabase 那边已经做了服务端过滤，localStorage 补充的需补过滤）
-  let result = bills
+  // 保留 localStorage 独有的账单（离线创建的）
+  const localOnly = localBills.filter(b => !supabaseIds.has(b.id))
+  const merged = [...supabaseBills, ...localOnly]
+  saveLocal(merged)
+
+  return supabaseBills
+}
+
+// ====== CRUD API（离线优先） ======
+
+/**
+ * 获取账单列表（离线优先）
+ * - 立即返回 localStorage 缓存数据
+ * - 后台尝试从 Supabase 同步（3s 超时）
+ * - 同步完成后通过 onSync 回调通知调用方更新 UI
+ */
+export async function fetchBills(
+  params?: {
+    member?: string
+    startDate?: string
+    endDate?: string
+    search?: string
+    limit?: number
+  },
+  onSync?: (bills: BillItem[]) => void
+): Promise<BillItem[]> {
+  // 1. 立即返回本地数据
+  let localBills = loadLocal()
+
+  // 应用过滤
   if (params?.member && params.member !== 'all') {
-    result = result.filter(b => b.member === params.member)
+    localBills = localBills.filter(b => b.member === params.member)
   }
   if (params?.startDate) {
-    result = result.filter(b => b.date >= params.startDate!)
+    localBills = localBills.filter(b => b.date >= params.startDate!)
   }
   if (params?.endDate) {
-    result = result.filter(b => b.date <= params.endDate!)
+    localBills = localBills.filter(b => b.date <= params.endDate!)
   }
   if (params?.search) {
     const s = params.search.toLowerCase()
-    result = result.filter(b =>
+    localBills = localBills.filter(b =>
       b.note.toLowerCase().includes(s) ||
       b.categoryName.toLowerCase().includes(s) ||
       String(b.amount).includes(s)
     )
   }
 
-  result.sort((a, b) => {
+  localBills.sort((a, b) => {
     if (a.date !== b.date) return b.date.localeCompare(a.date)
     return b.time.localeCompare(a.time)
   })
   if (params?.limit) {
-    result = result.slice(0, params.limit)
+    localBills = localBills.slice(0, params.limit)
   }
-  return result
+
+  // 2. 后台同步 Supabase（不阻塞返回）
+  if (navigator.onLine && !_supabaseFailed) {
+    backgroundSyncFromSupabase(params).then(supabaseBills => {
+      if (onSync) onSync(supabaseBills)
+      window.dispatchEvent(new CustomEvent(SYNC_EVENT, {
+        detail: { bills: supabaseBills }
+      }))
+    }).catch(() => {
+      // 超时或失败，静默处理
+    })
+  }
+
+  return localBills
 }
 
 export async function createBill(bill: Omit<BillItem, 'id'>): Promise<BillItem> {
-  // 附上当前用户 ID
   const { data: { user } } = await supabase.auth.getUser()
   const billWithUser = { ...bill, user_id: user?.id ?? undefined }
 
-  // 离线时直接入队
+  // 离线：直接入本地队列
   if (!navigator.onLine) {
     const queue = loadQueue()
     const localId = crypto.randomUUID()
@@ -313,126 +332,92 @@ export async function createBill(bill: Omit<BillItem, 'id'>): Promise<BillItem> 
     throw new Error('OFFLINE_QUEUED')
   }
 
-  let supabaseOk = false
+  // 在线：尝试 Supabase（3s 超时）
   try {
-    const { data, error } = await supabase
-      .from('bills')
-      .insert(toDbRow(billWithUser))
-      .select()
-      .single()
-    if (error) {
-      console.error('[bills] Supabase 写入失败:', error.message, error.code, error.details)
-    } else if (data) {
-      supabaseOk = true
-      const result = toBillItem(data)
-      // 同步写入 localStorage，确保降级读取时不丢失
-      const bills = loadLocal()
-      const idx = bills.findIndex(b => b.id === result.id)
-      if (idx >= 0) bills[idx] = result
-      else bills.push(result)
-      saveLocal(bills)
+    const { data, error } = await supabaseWithTimeout(
+      supabase.from('bills').insert(toDbRow(billWithUser)).select().single()
+    )
+    if (data && !error) {
+      markSupabaseOk()
+      const result = toBillItem(data as Record<string, unknown>)
+      addToLocal(result)
       return result
     }
-  } catch (err) {
-    console.error('[bills] Supabase 写入异常:', err)
-    // 网络错误，入队
-    const queue = loadQueue()
-    const localId = crypto.randomUUID()
-    queue.push({ ...billWithUser, _queuedAt: new Date().toISOString(), _localId: localId })
-    saveQueue(queue)
-    throw new Error('OFFLINE_QUEUED')
-  }
+  } catch { /* 超时或网络错误，继续降级 */ }
 
-  // Supabase 写入失败，降级到 localStorage
-  if (!supabaseOk) {
-    console.warn('[bills] Supabase 不可用，降级到 localStorage')
-  }
-  const newBill: BillItem = {
-    ...billWithUser,
-    id: crypto.randomUUID()
-  }
-  const bills = loadLocal()
-  bills.push(newBill)
-  saveLocal(bills)
+  // Supabase 失败：降级到 localStorage
+  markSupabaseFailed()
+  const newBill: BillItem = { ...billWithUser, id: crypto.randomUUID() }
+  addToLocal(newBill)
   return newBill
 }
 
 export async function updateBill(id: string, bill: Partial<BillItem>): Promise<BillItem> {
-  // 同时更新 Supabase 和 localStorage
-  let updated = false
-  try {
-    const { data, error } = await supabase
-      .from('bills')
-      .update(toDbRow(bill))
-      .eq('id', id)
-      .select()
-      .single()
-    if (!error && data) updated = true
-  } catch { /* 忽略，继续更新 localStorage */ }
+  // 先更新本地（即时响应）
+  const result = updateInLocal(id, bill)
 
-  const bills = loadLocal()
-  const index = bills.findIndex(b => b.id === id)
-  if (index === -1 && !updated) throw new Error(`Bill not found: ${id}`)
-  if (index !== -1) {
-    bills[index] = { ...bills[index], ...bill, id }
-    saveLocal(bills)
-    return bills[index]
+  // 后台尝试同步 Supabase
+  if (navigator.onLine && !_supabaseFailed) {
+    supabaseWithTimeout(
+      supabase.from('bills').update(toDbRow(bill)).eq('id', id)
+    ).catch(() => { /* 静默失败 */ })
   }
-  // 只在 Supabase 存在的情况（理论上 fetchBills 的合并逻辑会保证两端同步）
-  throw new Error(`Bill not found: ${id}`)
+
+  return result
 }
 
 export async function deleteBill(id: string): Promise<void> {
-  // 同时删除 Supabase 和 localStorage
-  try {
-    await supabase.from('bills').delete().eq('id', id)
-  } catch { /* 忽略，继续删除 localStorage */ }
+  removeFromLocal(id)
 
-  const bills = loadLocal().filter(b => b.id !== id)
-  saveLocal(bills)
+  // 后台尝试同步 Supabase
+  if (navigator.onLine && !_supabaseFailed) {
+    supabaseWithTimeout(
+      supabase.from('bills').delete().eq('id', id)
+    ).catch(() => { /* 静默失败 */ })
+  }
 }
 
-export async function fetchMonthStats(year?: number, month?: number): Promise<{
-  totalExpense: number
-  totalIncome: number
-  count: number
-}> {
+export async function fetchMonthStats(
+  year?: number,
+  month?: number,
+  onSync?: (stats: { totalExpense: number; totalIncome: number; count: number }) => void
+): Promise<{ totalExpense: number; totalIncome: number; count: number }> {
   const now = new Date()
   const y = year ?? now.getFullYear()
   const m = (month ?? now.getMonth() + 1).toString().padStart(2, '0')
   const startOfMonth = `${y}-${m}-01`
-  // 获取当月最后一天
   const lastDay = new Date(y, parseInt(m), 0).getDate()
   const endOfMonth = `${y}-${m}-${String(lastDay).padStart(2, '0')}`
 
-  // 合并 Supabase 和 localStorage 的统计
-  const idSet = new Set<string>()
-  let allBills: BillItem[] = []
-
-  try {
-    const { data, error } = await supabase
-      .from('bills')
-      .select('*')
-      .gte('date', startOfMonth)
-      .lte('date', endOfMonth)
-
-    if (!error && data) {
-      for (const row of data) {
-        const bill = toBillItem(row)
-        idSet.add(bill.id)
-        allBills.push(bill)
-      }
-    }
-  } catch { /* 降级 */ }
-
+  // 1. 立即计算本地统计
   const prefix = `${y}-${m}`
-  for (const bill of loadLocal()) {
-    if (!idSet.has(bill.id) && bill.date.startsWith(prefix)) {
-      allBills.push(bill)
-    }
+  const localBills = loadLocal().filter(b => b.date.startsWith(prefix))
+  const localExpense = localBills.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0)
+  const localIncome = localBills.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0)
+  const localResult = { totalExpense: localExpense, totalIncome: localIncome, count: localBills.length }
+
+  // 2. 后台同步 Supabase
+  if (navigator.onLine && !_supabaseFailed) {
+    supabaseWithTimeout(
+      supabase.from('bills').select('*').gte('date', startOfMonth).lte('date', endOfMonth)
+    ).then(({ data, error }) => {
+      if (!error && data) {
+        const supabaseBills = (data as Record<string, unknown>[]).map(toBillItem)
+        // 合并到本地缓存
+        const supabaseIds = new Set(supabaseBills.map(b => b.id))
+        const localOnly = loadLocal().filter(b => !supabaseIds.has(b.id))
+        saveLocal([...supabaseBills, ...localOnly])
+
+        // 重新计算统计
+        const allBills = [...supabaseBills, ...localOnly.filter(b => b.date.startsWith(prefix))]
+        const expense = allBills.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0)
+        const income = allBills.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0)
+        const syncedResult = { totalExpense: expense, totalIncome: income, count: allBills.length }
+
+        if (onSync) onSync(syncedResult)
+      }
+    }).catch(() => {})
   }
 
-  const expense = allBills.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0)
-  const income = allBills.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0)
-  return { totalExpense: expense, totalIncome: income, count: allBills.length }
+  return localResult
 }

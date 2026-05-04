@@ -1,3 +1,4 @@
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .pz-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#F8F9FA;z-index:500;animation:slideUp .3s ease;overflow-y:auto}
 .pz-page{min-height:100vh}
 .pz-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));background:#FFF;border-bottom:1px solid #F0F0F0}

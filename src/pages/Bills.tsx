@@ -94,7 +94,15 @@ export default function Bills({ activeTab, onTabChange, refreshKey, onDataChange
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    fetchBills({ member: memberFilter !== 'all' ? memberFilter : undefined, search: debouncedSearch || undefined })
+    fetchBills(
+      { member: memberFilter !== 'all' ? memberFilter : undefined, search: debouncedSearch || undefined },
+      async (freshBills) => {
+        if (!cancelled) {
+          const transformed = await transformBillsPerspective(freshBills)
+          setBills(transformed)
+        }
+      }
+    )
       .then(transformBillsPerspective)
       .then(data => { if (!cancelled) { setBills(data); setLoading(false) } })
       .catch(() => { if (!cancelled) setLoading(false) })

@@ -65,10 +65,19 @@ export default function Reports({ activeTab, onTabChange, onAddRecord, refreshKe
         const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate()
         const startDate = `${selectedYear}-${m}-01`
         const endDate = `${selectedYear}-${m}-${String(daysInMonth).padStart(2, '0')}`
-        const [stats, data] = await Promise.all([
-          fetchMonthStats(selectedYear, selectedMonth),
-          fetchBills({ startDate, endDate }).then(transformBillsPerspective)
-        ])
+        // 立即获取本地数据，后台同步 Supabase
+        const stats = await fetchMonthStats(selectedYear, selectedMonth, (freshStats) => {
+          if (!cancelled) setMonthStats(freshStats)
+        })
+        const data = await fetchBills(
+          { startDate, endDate },
+          async (freshBills) => {
+            if (!cancelled) {
+              const transformed = await transformBillsPerspective(freshBills)
+              setBills(transformed)
+            }
+          }
+        ).then(transformBillsPerspective)
         if (!cancelled) {
           setMonthStats(stats)
           setBills(data)
