@@ -15,10 +15,11 @@ React 19 + TypeScript + Vite 8 + Supabase Auth/DB + recharts + Lucide Icons
 
 ## 数据架构
 
-- **Supabase 主存储** — 账单通过 RLS 策略实现跨设备同步
-- **localStorage 降级** — Supabase 不可用时自动切换，网络恢复后合并同步
+- **离线优先** — 所有读取即时返回 localStorage 缓存，Supabase 后台异步同步不阻塞 UI
+- **内存缓存** — 首次读取后缓存在内存，后续页面切换零延迟
+- **Supabase 3s 超时** — 网络不可用（如不开 VPN）时 3 秒自动降级，不会长时间卡住
 - **离线队列** — 断网时记账入队，恢复联网自动同步（`syncQueue`）
-- **双写合并** — `fetchBills` 同时读取 Supabase + localStorage，以 ID 去重合并
+- **双写合并** — `fetchBills` 同时读取 Supabase + localStorage，以 ID 去重合并，Supabase 数据覆盖本地
 
 ## 功能
 
